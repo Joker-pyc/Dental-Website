@@ -2719,3 +2719,108 @@ body.menu-open {
 }
 
 /* --- End Mobile Menu System (Dark Theme) --- */
+
+/* --- Carousel Progress Bar --- */
+#testimonialCarouselProgress {
+    width: 100%;
+    height: 4px;
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 10;
+    background: rgba(255, 255, 255, 0.12);
+    overflow: hidden;
+    border-radius: 2px;
+    pointer-events: none;
+}
+
+#testimonialCarouselProgress .testimonial-progress-bar-inner {
+    height: 100%;
+    width: 0%;
+    background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
+    border-radius: 2px;
+    transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* --- Carousel Slide Animation --- */
+.testimonial-carousel-track {
+    display: flex;
+    transition: transform 0.45s cubic-bezier(0.4, 0, 0.2, 1);
+    will-change: transform;
+}
+
+.testimonial-card {
+    min-width: 100%;
+    max-width: 100%;
+    flex: 0 0 100%;
+    transition: box-shadow 0.3s, background 0.3s, opacity 0.45s cubic-bezier(0.4, 0, 0.2, 1), transform 0.45s cubic-bezier(0.4, 0, 0.2, 1);
+    user-select: none;
+    pointer-events: auto;
+}
+
+.testimonial-card.dragging {
+    cursor: grabbing;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.18), 0 1.5px 0 var(--glass-border);
+    opacity: 0.98;
+}
+
+/* --- Responsive Progress Bar --- */
+@media (max-width: 600px) {
+    #testimonialCarouselProgress {
+        height: 3px;
+    }
+}
+
+/* --- Navigation Buttons --- */
+.testimonial-nav {
+    outline: none;
+    border: none;
+    background: rgba(30, 30, 40, 0.22);
+    color: var(--primary-color);
+    border-radius: 50%;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.10);
+    cursor: pointer;
+    transition: background 0.2s, color 0.2s, box-shadow 0.2s;
+    opacity: 0.98;
+    will-change: transform;
+    user-select: none;
+}
+
+.testimonial-nav:focus-visible {
+    outline: 2px solid var(--primary-color);
+    outline-offset: 2px;
+}
+
+.testimonial-nav:hover {
+    background: var(--primary-color);
+    color: #fff;
+}
+
+/* --- Dot Indicators --- */
+.testimonial-dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: var(--glass-border, #444);
+    cursor: pointer;
+    border: 2px solid transparent;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    outline: none;
+    flex: 0 0 auto;
+    margin: 0 2px;
+}
+
+.testimonial-dot.active {
+    background: var(--primary-color);
+    border-color: var(--primary-color);
+    transform: scale(1.18);
+    box-shadow: 0 0 8px var(--primary-color);
+}
+
+.testimonial-dot:focus-visible {
+    outline: 2px solid var(--primary-color);
+    outline-offset: 2px;
+}
+
+/* The .testimonial-carousel-track already has a smooth transform transition for all movement */

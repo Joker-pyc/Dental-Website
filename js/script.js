@@ -681,50 +681,22 @@
     });
     if (slideCount > DOTS_MAX) {
       const activeDot = dots.querySelector(".active");
-      if (activeDot) {
-        activeDot.scrollIntoView({
-          inline: "center",
-          block: "nearest",
-          behavior: "smooth",
-        });
+      const testimonialSection =
+        document.getElementById("testimonials") ||
+        document.querySelector(".testimonial-section");
+      if (activeDot && testimonialSection) {
+        const rect = testimonialSection.getBoundingClientRect();
+        const inView = rect.top < window.innerHeight && rect.bottom > 0;
+        if (inView) {
+          activeDot.scrollIntoView({
+            inline: "center",
+            block: "nearest",
+            behavior: "smooth",
+          });
+        }
       }
     }
   }
-
-  const style = document.createElement("style");
-  style.innerHTML = `
-  .testimonial-card {
-    opacity: 1;
-    transform: scale(1) translateY(0);
-    transition: 
-      opacity 0.5s ease,
-      transform 0.5s cubic-bezier(0.25, 1, 0.5, 1);
-  }
-
-  .testimonial-card.anim-out-left {
-    opacity: 0;
-    transform: scale(1.05) translateY(20px);
-    pointer-events: none;
-  }
-
-  .testimonial-card.anim-out-right {
-    opacity: 0;
-    transform: scale(1.05) translateY(-20px);
-    pointer-events: none;
-  }
-
-  .testimonial-card.anim-in-left {
-    opacity: 0;
-    transform: scale(0.9) translateY(-20px);
-  }
-
-  .testimonial-card.anim-in-right {
-    opacity: 0;
-    transform: scale(0.9) translateY(20px);
-  }
-`;
-
-  document.head.appendChild(style);
 
   function animateTo(idx, direction = 1) {
     if (!track) return;
@@ -849,4 +821,470 @@
   restartAutoScroll();
 
   window.addEventListener("beforeunload", stopAutoScroll);
+
+  // --- Testimonial Carousel Modern Upgrade ---
+  // 1. Add a progress bar element to the DOM if not present
+  const progressBarId = "testimonialCarouselProgress";
+  let progressBar = document.getElementById(progressBarId);
+  if (!progressBar) {
+    progressBar = document.createElement("div");
+    progressBar.id = progressBarId;
+    progressBar.setAttribute("aria-hidden", "true");
+    progressBar.style.position = "absolute";
+    progressBar.style.left = "0";
+    progressBar.style.right = "0";
+    progressBar.style.bottom = "0";
+    progressBar.style.height = "4px";
+    progressBar.style.background = "rgba(255,255,255,0.12)";
+    progressBar.innerHTML =
+      '<div class="testimonial-progress-bar-inner"></div>';
+    const wrapper = document.querySelector(".testimonial-carousel-wrapper");
+    if (wrapper) wrapper.appendChild(progressBar);
+  }
+  const progressInner = progressBar.querySelector(
+    ".testimonial-progress-bar-inner"
+  );
+
+  // --- Carousel State ---
+  let isDragging = false;
+  let dragStartX = 0;
+  let dragStartY = 0;
+  let dragDeltaX = 0;
+  let dragDeltaY = 0;
+  let dragLastX = 0;
+  let dragStartTime = 0;
+  let dragVelocity = 0;
+  let dragDirection = 0;
+  let autoScrollTimeout = null;
+  let autoScrollPaused = false;
+  const AUTO_SCROLL_INTERVAL = 5000;
+  const AUTO_SCROLL_RESUME_DELAY = 2000;
+
+  // --- Helper: Animate Progress Bar ---
+  function startProgressBar() {
+    if (!progressInner) return;
+    progressInner.style.transition = "none";
+    progressInner.style.width = "0%";
+    setTimeout(() => {
+      progressInner.style.transition = `width ${AUTO_SCROLL_INTERVAL}ms linear`;
+      progressInner.style.width = "100%";
+    }, 20);
+  }
+  function resetProgressBar() {
+    if (!progressInner) return;
+    progressInner.style.transition = "none";
+    progressInner.style.width = "0%";
+  }
+
+  // --- Touch/Mouse Drag Handlers ---
+  function onDragStart(e) {
+    if (e.type === "touchstart") {
+      dragStartX = e.touches[0].clientX;
+      dragStartY = e.touches[0].clientY;
+    } else {
+      dragStartX = e.clientX;
+      dragStartY = e.clientY;
+      document.addEventListener("mousemove", onDragMove);
+      document.addEventListener("mouseup", onDragEnd);
+    }
+    isDragging = true;
+    dragDeltaX = 0;
+    dragDeltaY = 0;
+    dragLastX = dragStartX;
+    dragStartTime = Date.now();
+    dragVelocity = 0;
+    dragDirection = 0;
+    stopAutoScroll();
+    resetProgressBar();
+  }
+  function onDragMove(e) {
+    if (!isDragging) return;
+    let x, y;
+    if (e.type === "touchmove") {
+      x = e.touches[0].clientX;
+      y = e.touches[0].clientY;
+    } else {
+      x = e.clientX;
+      y = e.clientY;
+    }
+    dragDeltaX = x - dragStartX;
+    dragDeltaY = y - dragStartY;
+    dragDirection = Math.abs(dragDeltaX) > Math.abs(dragDeltaY) ? 1 : 0;
+    // Only preventDefault if horizontal swipe
+    if (dragDirection && Math.abs(dragDeltaX) > 10) {
+      e.preventDefault?.();
+    }
+    // Move slide visually
+    if (track) {
+      track.style.transition = "none";
+      track.style.transform = `translate3d(${dragDeltaX}px,0,0)`;
+    }
+    dragVelocity = x - dragLastX;
+    dragLastX = x;
+  }
+  function onDragEnd(e) {
+    if (!isDragging) return;
+    isDragging = false;
+    // Touch angle detection: only swipe if horizontal angle < 30deg
+    const angle = Math.abs(
+      (Math.atan2(dragDeltaY, dragDeltaX) * 180) / Math.PI
+    );
+    let shouldSwipe = dragDirection && Math.abs(dragDeltaX) > 40 && angle < 30;
+    let momentum = Math.abs(dragVelocity) > 10;
+    if (shouldSwipe || momentum) {
+      if (dragDeltaX < 0) next();
+      else if (dragDeltaX > 0) prev();
+    } else {
+      // Snap back
+      if (track) {
+        track.style.transition = "transform 0.4s cubic-bezier(0.4,0,0.2,1)";
+        track.style.transform = "translate3d(0,0,0)";
+      }
+    }
+    dragDeltaX = 0;
+    dragDeltaY = 0;
+    dragVelocity = 0;
+    dragDirection = 0;
+    if (e.type === "mouseup") {
+      document.removeEventListener("mousemove", onDragMove);
+      document.removeEventListener("mouseup", onDragEnd);
+    }
+    setTimeout(() => {
+      autoScrollPaused = false;
+      restartAutoScroll();
+      startProgressBar();
+    }, AUTO_SCROLL_RESUME_DELAY);
+  }
+
+  // --- Auto-Scroll with Pause/Resume ---
+  function restartAutoScroll() {
+    if (autoScroll) clearInterval(autoScroll);
+    if (autoScrollTimeout) clearTimeout(autoScrollTimeout);
+    if (!autoScrollPaused) {
+      autoScroll = setInterval(() => {
+        next();
+        startProgressBar();
+      }, AUTO_SCROLL_INTERVAL);
+      startProgressBar();
+    }
+  }
+  function stopAutoScroll() {
+    if (autoScroll) clearInterval(autoScroll);
+    autoScroll = null;
+    resetProgressBar();
+  }
+  function pauseAutoScroll() {
+    autoScrollPaused = true;
+    stopAutoScroll();
+    if (autoScrollTimeout) clearTimeout(autoScrollTimeout);
+  }
+  function resumeAutoScroll() {
+    autoScrollPaused = false;
+    restartAutoScroll();
+  }
+
+  // --- Event Listeners ---
+  if (track) {
+    // Touch events
+    track.addEventListener("touchstart", onDragStart, { passive: false });
+    track.addEventListener("touchmove", onDragMove, { passive: false });
+    track.addEventListener("touchend", onDragEnd, { passive: true });
+    // Mouse events
+    track.addEventListener("mousedown", onDragStart);
+    // Pause/resume on hover/touch
+    track.addEventListener("mouseenter", pauseAutoScroll);
+    track.addEventListener("mouseleave", () => {
+      autoScrollTimeout = setTimeout(
+        resumeAutoScroll,
+        AUTO_SCROLL_RESUME_DELAY
+      );
+    });
+    track.addEventListener("touchstart", pauseAutoScroll, { passive: false });
+    track.addEventListener(
+      "touchend",
+      () => {
+        autoScrollTimeout = setTimeout(
+          resumeAutoScroll,
+          AUTO_SCROLL_RESUME_DELAY
+        );
+      },
+      { passive: true }
+    );
+  }
+
+  // --- Accessibility: Keyboard Navigation ---
+  if (track) {
+    track.addEventListener("keydown", (e) => {
+      if (e.key === "ArrowLeft") prev();
+      if (e.key === "ArrowRight") next();
+    });
+  }
+  if (prevBtn) prevBtn.addEventListener("click", prev);
+  if (nextBtn) nextBtn.addEventListener("click", next);
+
+  window.addEventListener("resize", () => {
+    render();
+    restartAutoScroll();
+  });
+
+  render();
+  restartAutoScroll();
+  window.addEventListener("beforeunload", stopAutoScroll);
+
+  // --- Infinite Carousel Upgrade ---
+  // 1. Clone first and last slides for seamless infinite effect
+  function setupInfiniteCarousel() {
+    if (!track) return;
+    // Remove all children
+    while (track.firstChild) track.removeChild(track.firstChild);
+    // Clone last, all, first
+    const slides = testimonials.map((_, idx) => renderCard(idx));
+    const first = slides[0];
+    const last = slides[slides.length - 1];
+    track.insertAdjacentHTML("beforeend", last); // clone last at start
+    slides.forEach((html) => track.insertAdjacentHTML("beforeend", html));
+    track.insertAdjacentHTML("beforeend", first); // clone first at end
+    // Set initial position
+    track.style.transition = "none";
+    track.style.transform = `translate3d(-100%,0,0)`;
+  }
+
+  let infiniteCurrent = 1; // index in the DOM (1 = first real slide)
+  function goToInfinite(idx, animate = true) {
+    if (!track) return;
+    infiniteCurrent = idx;
+    if (animate) {
+      track.style.transition = "transform 0.45s cubic-bezier(0.4,0,0.2,1)";
+    } else {
+      track.style.transition = "none";
+    }
+    track.style.transform = `translate3d(${-100 * infiniteCurrent}%,0,0)`;
+    // After transition, if at clone, jump to real
+    setTimeout(
+      () => {
+        if (infiniteCurrent === 0) {
+          track.style.transition = "none";
+          infiniteCurrent = slideCount;
+          track.style.transform = `translate3d(${-100 * infiniteCurrent}%,0,0)`;
+        } else if (infiniteCurrent === slideCount + 1) {
+          track.style.transition = "none";
+          infiniteCurrent = 1;
+          track.style.transform = `translate3d(${-100 * infiniteCurrent}%,0,0)`;
+        }
+        renderDotsInfinite();
+        updateButtons();
+      },
+      animate ? 460 : 0
+    );
+  }
+  function nextInfinite() {
+    goToInfinite(infiniteCurrent + 1, true);
+    restartAutoScroll();
+  }
+  function prevInfinite() {
+    goToInfinite(infiniteCurrent - 1, true);
+    restartAutoScroll();
+  }
+  function renderDotsInfinite() {
+    if (!dots) return;
+    let html = "";
+    let start = 0;
+    let end = slideCount;
+    if (slideCount > DOTS_MAX) {
+      if (infiniteCurrent - 1 < Math.floor(DOTS_MAX / 2)) {
+        start = 0;
+        end = DOTS_MAX;
+      } else if (infiniteCurrent - 1 > slideCount - Math.ceil(DOTS_MAX / 2)) {
+        start = slideCount - DOTS_MAX;
+        end = slideCount;
+      } else {
+        start = infiniteCurrent - 1 - Math.floor(DOTS_MAX / 2);
+        end = start + DOTS_MAX;
+      }
+    }
+    for (let i = start; i < end; i++) {
+      html += `<button class="testimonial-dot${
+        i === infiniteCurrent - 1 ? " active" : ""
+      }" aria-label="Go to testimonial ${
+        i + 1
+      }" tabindex="0" data-idx="${i}"></button>`;
+    }
+    dots.innerHTML = html;
+    dots.querySelectorAll(".testimonial-dot").forEach((dot) => {
+      dot.addEventListener("click", (e) => {
+        goToInfinite(parseInt(dot.dataset.idx) + 1, true);
+      });
+      dot.addEventListener("keydown", (e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          goToInfinite(parseInt(dot.dataset.idx) + 1, true);
+        }
+      });
+    });
+  }
+  // --- Touch/Mouse Drag for Infinite Carousel ---
+  let infiniteDragStartX = 0;
+  let infiniteDragStartY = 0;
+  let infiniteDragDeltaX = 0;
+  let infiniteDragDeltaY = 0;
+  let infiniteDragging = false;
+  let infiniteDragLastX = 0;
+  let infiniteDragVelocity = 0;
+  let infiniteDragDirection = 0;
+  function onInfiniteDragStart(e) {
+    if (e.type === "touchstart") {
+      infiniteDragStartX = e.touches[0].clientX;
+      infiniteDragStartY = e.touches[0].clientY;
+    } else {
+      infiniteDragStartX = e.clientX;
+      infiniteDragStartY = e.clientY;
+      document.addEventListener("mousemove", onInfiniteDragMove);
+      document.addEventListener("mouseup", onInfiniteDragEnd);
+    }
+    infiniteDragging = true;
+    infiniteDragDeltaX = 0;
+    infiniteDragDeltaY = 0;
+    infiniteDragLastX = infiniteDragStartX;
+    infiniteDragVelocity = 0;
+    infiniteDragDirection = 0;
+    stopAutoScroll();
+    resetProgressBar();
+    if (track) track.classList.add("dragging");
+  }
+  function onInfiniteDragMove(e) {
+    if (!infiniteDragging) return;
+    let x, y;
+    if (e.type === "touchmove") {
+      x = e.touches[0].clientX;
+      y = e.touches[0].clientY;
+    } else {
+      x = e.clientX;
+      y = e.clientY;
+    }
+    infiniteDragDeltaX = x - infiniteDragStartX;
+    infiniteDragDeltaY = y - infiniteDragStartY;
+    infiniteDragDirection =
+      Math.abs(infiniteDragDeltaX) > Math.abs(infiniteDragDeltaY) ? 1 : 0;
+    // Only preventDefault if horizontal swipe and angle < 30deg
+    const angle = Math.abs(
+      (Math.atan2(infiniteDragDeltaY, infiniteDragDeltaX) * 180) / Math.PI
+    );
+    if (
+      infiniteDragDirection &&
+      Math.abs(infiniteDragDeltaX) > 10 &&
+      angle < 30
+    ) {
+      e.preventDefault?.();
+    }
+    // Move slide visually
+    if (track) {
+      track.style.transition = "none";
+      track.style.transform = `translate3d(${
+        -100 * infiniteCurrent + (infiniteDragDeltaX / track.offsetWidth) * 100
+      }%,0,0)`;
+    }
+    infiniteDragVelocity = x - infiniteDragLastX;
+    infiniteDragLastX = x;
+  }
+  function onInfiniteDragEnd(e) {
+    if (!infiniteDragging) return;
+    infiniteDragging = false;
+    if (track) track.classList.remove("dragging");
+    // Touch angle detection: only swipe if horizontal angle < 30deg
+    const angle = Math.abs(
+      (Math.atan2(infiniteDragDeltaY, infiniteDragDeltaX) * 180) / Math.PI
+    );
+    let shouldSwipe =
+      infiniteDragDirection && Math.abs(infiniteDragDeltaX) > 40 && angle < 30;
+    let momentum = Math.abs(infiniteDragVelocity) > 10;
+    if (shouldSwipe || momentum) {
+      if (infiniteDragDeltaX < 0) nextInfinite();
+      else if (infiniteDragDeltaX > 0) prevInfinite();
+    } else {
+      // Snap back
+      if (track) {
+        track.style.transition = "transform 0.4s cubic-bezier(0.4,0,0.2,1)";
+        track.style.transform = `translate3d(${-100 * infiniteCurrent}%,0,0)`;
+      }
+    }
+    infiniteDragDeltaX = 0;
+    infiniteDragDeltaY = 0;
+    infiniteDragVelocity = 0;
+    infiniteDragDirection = 0;
+    if (e.type === "mouseup") {
+      document.removeEventListener("mousemove", onInfiniteDragMove);
+      document.removeEventListener("mouseup", onInfiniteDragEnd);
+    }
+    setTimeout(() => {
+      autoScrollPaused = false;
+      restartAutoScroll();
+      startProgressBar();
+    }, AUTO_SCROLL_RESUME_DELAY);
+  }
+  // --- Replace old carousel logic with infinite version ---
+  function initInfiniteCarousel() {
+    setupInfiniteCarousel();
+    goToInfinite(1, false);
+    // Touch events
+    track.addEventListener("touchstart", onInfiniteDragStart, {
+      passive: false,
+    });
+    track.addEventListener("touchmove", onInfiniteDragMove, { passive: false });
+    track.addEventListener("touchend", onInfiniteDragEnd, { passive: true });
+    // Mouse events
+    track.addEventListener("mousedown", onInfiniteDragStart);
+    // Pause/resume on hover/touch
+    track.addEventListener("mouseenter", pauseAutoScroll);
+    track.addEventListener("mouseleave", () => {
+      autoScrollTimeout = setTimeout(
+        resumeAutoScroll,
+        AUTO_SCROLL_RESUME_DELAY
+      );
+    });
+    track.addEventListener("touchstart", pauseAutoScroll, { passive: false });
+    track.addEventListener(
+      "touchend",
+      () => {
+        autoScrollTimeout = setTimeout(
+          resumeAutoScroll,
+          AUTO_SCROLL_RESUME_DELAY
+        );
+      },
+      { passive: true }
+    );
+    // Keyboard navigation
+    track.addEventListener("keydown", (e) => {
+      if (e.key === "ArrowLeft") prevInfinite();
+      if (e.key === "ArrowRight") nextInfinite();
+    });
+    if (prevBtn) prevBtn.addEventListener("click", prevInfinite);
+    if (nextBtn) nextBtn.addEventListener("click", nextInfinite);
+    window.addEventListener("resize", () => {
+      setupInfiniteCarousel();
+      goToInfinite(infiniteCurrent, false);
+      restartAutoScroll();
+    });
+    renderDotsInfinite();
+    restartAutoScroll = function () {
+      if (autoScroll) clearInterval(autoScroll);
+      if (autoScrollTimeout) clearTimeout(autoScrollTimeout);
+      if (!autoScrollPaused) {
+        autoScroll = setInterval(() => {
+          nextInfinite();
+          startProgressBar();
+        }, AUTO_SCROLL_INTERVAL);
+        startProgressBar();
+      }
+    };
+    stopAutoScroll = function () {
+      if (autoScroll) clearInterval(autoScroll);
+      autoScroll = null;
+      resetProgressBar();
+    };
+    render = function () {}; // disable old render
+  }
+  // --- Initialize infinite carousel on DOMContentLoaded ---
+  if (track) {
+    initInfiniteCarousel();
+  }
 })();
