@@ -51,6 +51,13 @@
     />
   </head>
   <body>
+    <div id="theme-transition-overlay" aria-hidden="true">
+      <img
+        src="assets/images/logo.png"
+        alt="Company Logo"
+        id="theme-transition-logo"
+      />
+    </div>
     <div id="blob"></div>
     <div id="blur-overlay"></div>
 
@@ -97,6 +104,7 @@
           </div>
         </div>
       </nav>
+      <div class="rd-navbar-menu-overlay" id="navbar-menu-overlay"></div>
     </header>
 
     <main>
@@ -465,56 +473,48 @@
         </div>
       </section>
 
-      <section class="reviews-section" id="reviews">
-        <div class="section-header">
-          <div class="section-subheading">
-            Discover why patients trust us for their dental care
-          </div>
-          <h2 class="section-title" data-aos="fade-up">
-            What Our Patients Say
-          </h2>
-          <p class="section-subtitle" data-aos="fade-up" data-aos-delay="50">
-            Real stories, real smiles.
-          </p>
-        </div>
-        <div class="carousel-container">
-          <button
-            class="carousel-nav carousel-nav-prev"
-            id="carouselPrevBtn"
-            aria-label="Previous review"
+      <section
+        id="testimonials"
+        class="testimonial-section"
+        aria-label="Patient Testimonials"
+      >
+        <div class="testimonial-container">
+          <header class="testimonial-header">
+            <h2 class="testimonial-title">What Our Patients Say</h2>
+            <p class="testimonial-desc">Real stories, real smiles.</p>
+          </header>
+          <div
+            class="testimonial-carousel-wrapper"
             tabindex="0"
+            aria-roledescription="carousel"
+            aria-label="Testimonials"
+            aria-live="polite"
           >
-            <svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true">
-              <path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z" />
-            </svg>
-          </button>
-          <div class="carousel-track-outer">
-            <div
-              class="carousel-track"
-              id="carouselTrack"
-              aria-live="polite"
-              role="region"
-              aria-label="Patient testimonials carousel"
-            >
-              <!-- Review cards will be injected by JS -->
+            <div class="testimonial-carousel-track-outer">
+              <ul
+                class="testimonial-carousel-track"
+                id="testimonialCarouselTrack"
+              ></ul>
             </div>
           </div>
-          <button
-            class="carousel-nav carousel-nav-next"
-            id="carouselNextBtn"
-            aria-label="Next review"
-            tabindex="0"
-          >
-            <svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true">
-              <path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z" />
-            </svg>
-          </button>
+          <div class="testimonial-dots-wrapper">
+            <button
+              class="testimonial-nav testimonial-nav-prev"
+              aria-label="Previous testimonial"
+              tabindex="0"
+            ></button>
+            <div
+              class="testimonial-dots"
+              id="testimonialCarouselDots"
+              aria-label="Testimonial navigation dots"
+            ></div>
+            <button
+              class="testimonial-nav testimonial-nav-next"
+              aria-label="Next testimonial"
+              tabindex="0"
+            ></button>
+          </div>
         </div>
-        <div
-          class="carousel-dots"
-          id="carouselDots"
-          aria-label="Review navigation dots"
-        ></div>
       </section>
     </main>
 
@@ -606,60 +606,140 @@
 
     <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
     <script src="js/script.js"></script>
+    <style>
+      #theme-transition-overlay {
+        position: fixed;
+        inset: 0;
+        z-index: 99999;
+        background: var(--theme-transition-bg, #181a1b);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.18s cubic-bezier(0.4, 0, 0.2, 1);
+        will-change: opacity;
+      }
+      #theme-transition-overlay.active {
+        opacity: 1;
+        pointer-events: all;
+        transition: opacity 0.12s cubic-bezier(0.4, 0, 0.2, 1);
+      }
+      #theme-transition-logo {
+        width: 120px;
+        height: 120px;
+        object-fit: contain;
+        filter: var(
+          --theme-transition-logo-filter,
+          drop-shadow(0 0 24px rgba(0, 0, 0, 0.18))
+        );
+        opacity: 0;
+        transform: scale(0.92);
+        transition: opacity 0.18s cubic-bezier(0.4, 0, 0.2, 1),
+          transform 0.18s cubic-bezier(0.4, 0, 0.2, 1),
+          filter 0.18s cubic-bezier(0.4, 0, 0.2, 1);
+        will-change: opacity, transform, filter;
+      }
+      #theme-transition-overlay.active #theme-transition-logo {
+        opacity: 1;
+        transform: scale(1);
+      }
+      body:not([data-theme="light"]) #theme-transition-overlay {
+        --theme-transition-bg: #181a1b;
+      }
+      body:not([data-theme="light"]) #theme-transition-logo {
+        --theme-transition-logo-filter: drop-shadow(
+          0 0 24px rgba(0, 0, 0, 0.18)
+        );
+      }
+      body[data-theme="light"] #theme-transition-overlay {
+        --theme-transition-bg: #fff;
+      }
+      body[data-theme="light"] #theme-transition-logo {
+        --theme-transition-logo-filter: drop-shadow(
+            0 0 24px rgba(217, 4, 41, 0.12)
+          )
+          invert(0.95) brightness(0.8);
+      }
+    </style>
     <script>
-      document
-        .getElementById("appointment-form")
-        .addEventListener("submit", function (event) {
-          event.preventDefault();
-          const name = document.getElementById("name").value;
-          const phone = document.getElementById("phone").value;
-          const date = document.getElementById("date").value;
-          const time = document.getElementById("time").value;
-          const message = `New Appointment Request:\nName: ${name}\nPhone: ${phone}\nPreferred Date: ${date}\nPreferred Time: ${time}`;
-          const whatsappUrl = `https://wa.me/918669048892?text=${encodeURIComponent(
-            message
-          )}`;
-          window.open(whatsappUrl, "_blank");
+      const overlay = document.getElementById("theme-transition-overlay");
+      const logo = document.getElementById("theme-transition-logo");
+      const darkSheet = document.getElementById("theme-stylesheet");
+      const lightSheet = document.getElementById("theme-light-stylesheet");
+      const toggleBtn = document.getElementById("theme-toggle");
+      const icon = document.getElementById("theme-toggle-icon");
+      let isSwitching = false;
+
+      function switchTheme(targetTheme) {
+        if (isSwitching) return;
+        isSwitching = true;
+        overlay.classList.add("active");
+        setTimeout(() => {
+          // Switch theme files
+          if (targetTheme === "light") {
+            if (darkSheet) darkSheet.disabled = true;
+            if (lightSheet) lightSheet.disabled = false;
+            if (icon) {
+              icon.classList.remove("fa-moon");
+              icon.classList.add("fa-sun");
+              icon.style.color = "#1976d2";
+            }
+            document.body.setAttribute("data-theme", "light");
+          } else {
+            if (darkSheet) darkSheet.disabled = false;
+            if (lightSheet) lightSheet.disabled = true;
+            if (icon) {
+              icon.classList.remove("fa-sun");
+              icon.classList.add("fa-moon");
+              icon.style.color = "#d90429";
+            }
+            document.body.setAttribute("data-theme", "dark");
+          }
+          localStorage.setItem("theme", targetTheme);
+          setTimeout(() => {
+            overlay.classList.remove("active");
+            setTimeout(() => {
+              isSwitching = false;
+            }, 200);
+          }, 120);
+        }, 100);
+      }
+
+      if (toggleBtn) {
+        toggleBtn.addEventListener("click", function () {
+          const current = lightSheet && lightSheet.disabled ? "dark" : "light";
+          switchTheme(current === "dark" ? "light" : "dark");
         });
-    </script>
-    <script>
+      }
+
+      // On page load: set theme from localStorage or system
       (function () {
-        const darkSheet = document.getElementById("theme-stylesheet");
-        const lightSheet = document.getElementById("theme-light-stylesheet");
-        const toggleBtn = document.getElementById("theme-toggle");
-        const icon = document.getElementById("theme-toggle-icon");
-        const prefersDark = window.matchMedia(
-          "(prefers-color-scheme: dark)"
-        ).matches;
-        function setTheme(mode) {
-          if (mode === "light") {
-            darkSheet.disabled = true;
-            lightSheet.disabled = false;
+        const userPref = localStorage.getItem("theme");
+        const systemPref = window.matchMedia("(prefers-color-scheme: light)")
+          .matches
+          ? "light"
+          : "dark";
+        const theme = userPref || systemPref;
+        if (theme === "light") {
+          if (darkSheet) darkSheet.disabled = true;
+          if (lightSheet) lightSheet.disabled = false;
+          if (icon) {
             icon.classList.remove("fa-moon");
             icon.classList.add("fa-sun");
             icon.style.color = "#1976d2";
-          } else {
-            darkSheet.disabled = false;
-            lightSheet.disabled = true;
+          }
+          document.body.setAttribute("data-theme", "light");
+        } else {
+          if (darkSheet) darkSheet.disabled = false;
+          if (lightSheet) lightSheet.disabled = true;
+          if (icon) {
             icon.classList.remove("fa-sun");
             icon.classList.add("fa-moon");
             icon.style.color = "#d90429";
           }
-          localStorage.setItem("theme", mode);
+          document.body.setAttribute("data-theme", "dark");
         }
-        function getSavedTheme() {
-          return localStorage.getItem("theme");
-        }
-        function detectTheme() {
-          const saved = getSavedTheme();
-          if (saved) return saved;
-          return prefersDark ? "dark" : "light";
-        }
-        setTheme(detectTheme());
-        toggleBtn.addEventListener("click", function () {
-          const current = lightSheet.disabled ? "dark" : "light";
-          setTheme(current === "dark" ? "light" : "dark");
-        });
       })();
     </script>
     <script src="js/chatbot.js"></script>

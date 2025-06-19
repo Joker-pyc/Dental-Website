@@ -8,14 +8,11 @@
     SUCCESS_TIMEOUT: 5000,
     ANIMATION_DELAY: 300,
     INTERSECTION_THRESHOLD: 0.4,
-    CAROUSEL_INTERVAL: 4000,
-    SWIPE_THRESHOLD: 50,
     MAX_REVIEW_LENGTH: 250,
   };
 
   const SELECTORS = {
     nav: ".rd-navbar",
-    navLinksContainer: ".rd-navbar .nav-links",
     navLinks: ".rd-navbar .nav-link",
     mobileMenuToggle: ".rd-mobile-menu-btn",
     appointmentForm: "#appointment-form",
@@ -28,7 +25,6 @@
     errorMessages: ".error-message",
   };
 
-  // Utility functions
   const utils = {
     throttle(func, limit) {
       let inThrottle;
@@ -43,20 +39,6 @@
 
     delay: (ms) => new Promise((resolve) => setTimeout(resolve, ms)),
 
-    getInitials: (name) =>
-      name
-        .split(" ")
-        .map((n) => n[0])
-        .join("")
-        .toUpperCase(),
-
-    truncateText(text, maxLength = CONSTANTS.MAX_REVIEW_LENGTH) {
-      if (text.length <= maxLength) return text;
-      const truncated = text.slice(0, maxLength);
-      const lastSpace = truncated.lastIndexOf(" ");
-      return truncated.slice(0, lastSpace) + "...";
-    },
-
     formatDate(dateString) {
       return new Date(dateString).toLocaleDateString("en-US", {
         weekday: "long",
@@ -67,7 +49,6 @@
     },
   };
 
-  // Main App object
   const App = {
     elements: {},
     state: {
@@ -97,17 +78,16 @@
     },
 
     cacheElements() {
-      // Cache all elements at once
       const cache = {};
+      const multipleSelectors = [
+        "navLinks",
+        "sections",
+        "timeSlots",
+        "errorMessages",
+      ];
 
       Object.entries(SELECTORS).forEach(([key, selector]) => {
-        const isMultiple = [
-          "navLinks",
-          "sections",
-          "timeSlots",
-          "errorMessages",
-        ].includes(key);
-        cache[key] = isMultiple
+        cache[key] = multipleSelectors.includes(key)
           ? document.querySelectorAll(selector)
           : document.querySelector(selector);
       });
@@ -117,7 +97,7 @@
 
     bindEvents() {
       this.bindBlobMovement();
-      this.bindMobileMenu();
+      this.initMobileMenuSystem();
       this.bindSmoothScroll();
     },
 
@@ -140,15 +120,140 @@
       window.addEventListener("pointermove", moveBlob, { passive: true });
     },
 
-    bindMobileMenu() {
-      this.elements.mobileMenuToggle?.addEventListener("click", (e) => {
-        e.preventDefault();
-        this.toggleMobileMenu();
+    initMobileMenuSystem() {
+      const nav = document.querySelector(".rd-navbar");
+      if (!nav) return;
+
+      const navLinks = document.querySelectorAll(
+        ".rd-navbar .nav-links a, .rd-navbar .nav-links .book-now-btn"
+      );
+      const mobileMenu = document.createElement("nav");
+      mobileMenu.className = "mobile-menu";
+      mobileMenu.setAttribute("aria-label", "Mobile Navigation");
+      mobileMenu.setAttribute("tabindex", "-1");
+
+      const closeBtn = document.createElement("button");
+      closeBtn.className = "mobile-menu-close";
+      closeBtn.setAttribute("aria-label", "Close menu");
+      closeBtn.innerHTML = "&times;";
+
+      const items = document.createElement("div");
+      items.className = "mobile-menu-items";
+      navLinks.forEach((link) => {
+        const clone = link.cloneNode(true);
+        clone.tabIndex = 0;
+        items.appendChild(clone);
+      });
+
+      mobileMenu.appendChild(closeBtn);
+      mobileMenu.appendChild(items);
+
+      const overlay = document.createElement("div");
+      overlay.className = "mobile-menu-overlay";
+      overlay.tabIndex = -1;
+
+      nav.parentNode.insertBefore(mobileMenu, nav.nextSibling);
+      nav.parentNode.insertBefore(overlay, mobileMenu.nextSibling);
+
+      this.elements.mobileMenu = mobileMenu;
+      this.elements.mobileMenuOverlay = overlay;
+      this.elements.mobileMenuClose = closeBtn;
+      this.elements.mobileMenuItems = items;
+
+      const hamburger = document.getElementById("mobile-menu-toggle");
+      if (hamburger) {
+        hamburger.addEventListener("click", (e) => {
+          e.preventDefault();
+          this.openMobileMenu();
+        });
+      }
+
+      closeBtn.addEventListener("click", () => this.closeMobileMenu());
+      overlay.addEventListener("click", () => this.closeMobileMenu());
+
+      document.addEventListener("mousedown", (e) => {
+        if (
+          this.isMobileMenuOpen() &&
+          !mobileMenu.contains(e.target) &&
+          !hamburger.contains(e.target)
+        ) {
+          this.closeMobileMenu();
+        }
+      });
+
+      this._mobileMenuKeyHandler = (e) => {
+        if (!this.isMobileMenuOpen()) return;
+        if (e.key === "Escape") {
+          e.preventDefault();
+          this.closeMobileMenu();
+        } else if (e.key === "Tab") {
+          const focusable = Array.from(
+            mobileMenu.querySelectorAll("a, button:not([disabled])")
+          );
+          if (focusable.length === 0) return;
+          const first = focusable[0];
+          const last = focusable[focusable.length - 1];
+          if (e.shiftKey) {
+            if (document.activeElement === first) {
+              e.preventDefault();
+              last.focus();
+            }
+          } else {
+            if (document.activeElement === last) {
+              e.preventDefault();
+              first.focus();
+            }
+          }
+        }
+      };
+      document.addEventListener("keydown", this._mobileMenuKeyHandler);
+
+      items.addEventListener("click", (e) => {
+        if (
+          e.target.tagName === "A" ||
+          e.target.classList.contains("book-now-btn")
+        ) {
+          this.closeMobileMenu();
+        }
       });
     },
 
+    openMobileMenu() {
+      if (!this.elements.mobileMenu) return;
+      this.elements.mobileMenu.classList.add("open");
+      this.elements.mobileMenuOverlay.classList.add("active");
+      document.body.classList.add("menu-open");
+      const hamburger = document.getElementById("mobile-menu-toggle");
+      if (hamburger) {
+        hamburger.setAttribute("aria-expanded", "true");
+      }
+      setTimeout(() => {
+        const firstLink =
+          this.elements.mobileMenuItems.querySelector("a, button");
+        if (firstLink) firstLink.focus();
+      }, 10);
+    },
+
+    closeMobileMenu() {
+      if (!this.elements.mobileMenu) return;
+      this.elements.mobileMenu.classList.remove("open");
+      this.elements.mobileMenuOverlay.classList.remove("active");
+      document.body.classList.remove("menu-open");
+      const hamburger = document.getElementById("mobile-menu-toggle");
+      if (hamburger) {
+        hamburger.setAttribute("aria-expanded", "false");
+        hamburger.focus();
+      }
+    },
+
+    isMobileMenuOpen() {
+      return (
+        this.elements.mobileMenu &&
+        this.elements.mobileMenu.classList.contains("open")
+      );
+    },
+
     bindSmoothScroll() {
-      // Use event delegation for better performance
       document.addEventListener("click", (e) => {
         const anchor = e.target.closest('a[href^="#"]');
         if (!anchor) return;
@@ -163,24 +268,7 @@
             block: "start",
           });
         }
-
-        // Close mobile menu if open
-        if (this.elements.navLinksContainer?.classList.contains("active")) {
-          this.toggleMobileMenu();
-        }
       });
-    },
-
-    toggleMobileMenu() {
-      const isExpanded =
-        this.elements.navLinksContainer.classList.toggle("active");
-      const toggle = this.elements.mobileMenuToggle;
-
-      toggle.setAttribute("aria-expanded", isExpanded);
-      toggle.innerHTML = isExpanded
-        ? '<i class="fas fa-times"></i>'
-        : '<i class="fas fa-bars"></i>';
-      document.body.classList.toggle("menu-open", isExpanded);
     },
 
     initAppointmentForm() {
@@ -202,17 +290,13 @@
     setupTimeSlots() {
       if (!this.elements.timeSlots) return;
 
-      // Use event delegation
       this.elements.appointmentForm.addEventListener("click", (e) => {
         const slot = e.target.closest(".time-slot");
         if (!slot) return;
 
         e.preventDefault();
 
-        // Remove previous selection
         this.elements.timeSlots.forEach((s) => s.classList.remove("selected"));
-
-        // Set new selection
         slot.classList.add("selected");
         this.state.selectedTime = slot.dataset.time;
         this.hideError("time-error");
@@ -260,7 +344,6 @@
       const submitBtn = this.elements.submitBtn;
       const originalText = submitBtn.innerHTML;
 
-      // Update button state
       submitBtn.innerHTML = '<div class="loading"></div> Sending...';
       submitBtn.disabled = true;
 
@@ -301,7 +384,6 @@
       const formData = this.getFormData();
       let isValid = true;
 
-      // Hide all error messages first
       this.elements.errorMessages?.forEach(
         (error) => (error.style.display = "none")
       );
@@ -410,318 +492,14 @@
       this.observers.add(observer);
     },
 
-    // Cleanup method for potential future use
     destroy() {
       this.observers.forEach((observer) => observer.disconnect());
       this.observers.clear();
     },
   };
 
-  // Reviews Carousel Module
-  const ReviewsCarousel = {
-    data: [
-      {
-        name: "Komalpreet Kaur",
-        stars: 5,
-        review:
-          "I had an amazing experience at Rain Dental Clinic! I got implants done by Dr. Anjali, and she was incredibly professional, thorough, and kind throughout the entire process. She took the time to explain every step...",
-      },
-      {
-        name: "Bhakti Dhuri",
-        stars: 5,
-        review:
-          "Had a great experience at Rain Dental clinic. The staff was friendly, and Dr. Anjali was professional and thorough. She explained everything clearly and made me feel comfortable.",
-      },
-      {
-        name: "Mira Rajput",
-        stars: 5,
-        review:
-          "I recently visited this clinic and I couldn't be more satisfied. From the moment I walked in, I was greeted warmly by the staff who were professional and efficient in handling my appointment.",
-      },
-      {
-        name: "Juweriya Imran",
-        stars: 5,
-        review:
-          "Rain Dental by Dr. Anjali is a game-changer! From painless treatments to smile makeovers, her expertise in implants and smile designing is exceptional. The clinic is modern and hygienic.",
-      },
-      {
-        name: "Akshatha Patil",
-        stars: 5,
-        review:
-          "Halfway through my treatment at Rain dental clinic for implants, bridges and crowns—excellent service. Now finished, I'm really happy with the result. Highly recommended!",
-      },
-      {
-        name: "Harshita Raj",
-        stars: 5,
-        review:
-          "I had a wonderful experience. The dentist and staff were kind, professional, and made me feel at ease. The treatment was painless and clearly explained. Highly recommend!",
-      },
-      {
-        name: "Sukhnoor Kaur",
-        stars: 5,
-        review:
-          "Extremely comfortable experience. Staff is very welcoming, polite and helpful. Dr. Anjali made me feel at ease and was very professional throughout. Highly recommend!",
-      },
-      {
-        name: "Vaishnavi Kubal",
-        stars: 5,
-        review:
-          "Had a wonderful experience at Rain Dental clinic. I got my smile designing done with Dr Anjali—she's really the best! Would highly recommend Rain Dental clinic.",
-      },
-      {
-        name: "Simran Kapoor",
-        stars: 5,
-        review:
-          "I had a great experience!! Dr. Anjali did my smile designing and I love the results. The staff was super friendly and made me feel comfortable.",
-      },
-      {
-        name: "Avinash Jha",
-        stars: 5,
-        review:
-          "I would like to thank Dr. Anjali for taking care of all the dental problems my family faced. She is polite, professional, and a one-stop solution for dental needs.",
-      },
-      {
-        name: "Aditi Banerjee",
-        stars: 5,
-        review:
-          "Dr. Anjali is very good at her job. She listens patiently and provides efficient solutions. I've recommended her to all my friends and family.",
-      },
-      {
-        name: "Apurva Jha",
-        stars: 5,
-        review:
-          "Got my root canal done and my sister's smile designing also was done by Dr Anjali. It was a nice experience.",
-      },
-      {
-        name: "Shreya Singh",
-        stars: 5,
-        review:
-          "The staff was friendly and attentive, and the clinic was clean and well-organized. The doctor listened and explained everything clearly. Highly recommended.",
-      },
-      {
-        name: "Riya Deb",
-        stars: 5,
-        review:
-          "Excellent staff, professional and painless treatment. Thank you Dr. Anjali for my new smile.",
-      },
-      {
-        name: "Sanjana Sudhakar",
-        stars: 5,
-        review:
-          "Amazing experience! I'm still surprised I had no pain getting my wisdom tooth out. Staff are friendly and accommodating!",
-      },
-    ],
-
-    state: {
-      currentSlide: 0,
-      autoScrollInterval: null,
-      slidesToShow: 3,
-      isTransitioning: false,
-    },
-
-    elements: {},
-
-    getSlidesToShow() {
-      const width = window.innerWidth;
-      if (width < 700) return 1;
-      if (width < 1100) return 2;
-      return 3;
-    },
-
-    init() {
-      this.cacheElements();
-      if (!this.elements.track) return;
-      this.state.slidesToShow = this.getSlidesToShow();
-      this.render();
-      this.update();
-      this.bindEvents();
-      this.startAutoScroll();
-      window.addEventListener(
-        "resize",
-        utils.throttle(() => {
-          const newSlides = this.getSlidesToShow();
-          if (newSlides !== this.state.slidesToShow) {
-            this.state.slidesToShow = newSlides;
-            this.render();
-            this.update();
-          }
-        }, 100)
-      );
-    },
-
-    cacheElements() {
-      this.elements = {
-        track: document.getElementById("carouselTrack"),
-        dotsContainer: document.getElementById("carouselDots"),
-        prevBtn: document.getElementById("carouselPrevBtn"),
-        nextBtn: document.getElementById("carouselNextBtn"),
-      };
-    },
-
-    render() {
-      if (!this.elements.track || !this.elements.dotsContainer) return;
-      // Render review cards
-      this.elements.track.innerHTML = this.data
-        .map(
-          (review, idx) => `
-        <div class="review-card" data-index="${idx}" tabindex="0">
-          <div class="reviewer-info">
-            <div class="reviewer-avatar">${utils.getInitials(review.name)}</div>
-            <div class="reviewer-details">
-              <h3>${review.name}</h3>
-              <p class="reviewer-title">${review.title || ""}</p>
-            </div>
-          </div>
-          <div class="rating">
-            ${'<svg class="star" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>'.repeat(
-              review.stars
-            )}
-          </div>
-          <p class="review-text">${utils.truncateText(review.review)}</p>
-        </div>
-      `
-        )
-        .join("");
-      // Render dots (one per group of slides)
-      const totalDots = Math.ceil(this.data.length / this.state.slidesToShow);
-      this.elements.dotsContainer.innerHTML = Array.from({ length: totalDots })
-        .map(
-          (_, idx) =>
-            `<div class="dot${
-              idx ===
-              Math.floor(this.state.currentSlide / this.state.slidesToShow)
-                ? " active"
-                : ""
-            }" 
-              data-slide="${idx}" 
-              aria-label="Go to slide ${idx + 1}" 
-              tabindex="0"></div>`
-        )
-        .join("");
-    },
-
-    update() {
-      if (!this.elements.track) return;
-      const slideWidth = this.elements.track.children[0]?.offsetWidth || 340;
-      const gap =
-        parseInt(
-          getComputedStyle(this.elements.track.children[0])?.marginRight || 0,
-          10
-        ) || 0;
-      const offset = -this.state.currentSlide * (slideWidth + gap);
-      this.elements.track.style.transform = `translateX(${offset}px)`;
-      // Update dots
-      const dots = this.elements.dotsContainer.querySelectorAll(".dot");
-      const activeDot = Math.floor(
-        this.state.currentSlide / this.state.slidesToShow
-      );
-      dots.forEach((dot, idx) => {
-        dot.classList.toggle("active", idx === activeDot);
-      });
-    },
-
-    next() {
-      if (this.state.isTransitioning) return;
-      const maxSlide = this.data.length - this.state.slidesToShow;
-      this.state.currentSlide += this.state.slidesToShow;
-      if (this.state.currentSlide > maxSlide) this.state.currentSlide = 0;
-      this.update();
-    },
-
-    prev() {
-      if (this.state.isTransitioning) return;
-      const maxSlide = this.data.length - this.state.slidesToShow;
-      this.state.currentSlide -= this.state.slidesToShow;
-      if (this.state.currentSlide < 0)
-        this.state.currentSlide = maxSlide >= 0 ? maxSlide : 0;
-      this.update();
-    },
-
-    goTo(dotIdx) {
-      this.state.currentSlide = dotIdx * this.state.slidesToShow;
-      this.update();
-    },
-
-    startAutoScroll() {
-      this.pauseAutoScroll();
-      this.state.autoScrollInterval = setInterval(() => this.next(), 5000);
-    },
-
-    pauseAutoScroll() {
-      if (this.state.autoScrollInterval) {
-        clearInterval(this.state.autoScrollInterval);
-        this.state.autoScrollInterval = null;
-      }
-    },
-
-    bindEvents() {
-      this.elements.prevBtn?.addEventListener("click", () => {
-        this.prev();
-        this.startAutoScroll();
-      });
-      this.elements.nextBtn?.addEventListener("click", () => {
-        this.next();
-        this.startAutoScroll();
-      });
-      this.bindDotEvents();
-      if (this.elements.track) {
-        this.elements.track.addEventListener("mouseenter", () =>
-          this.pauseAutoScroll()
-        );
-        this.elements.track.addEventListener("mouseleave", () =>
-          this.startAutoScroll()
-        );
-        this.bindTouchEvents();
-      }
-    },
-
-    bindDotEvents() {
-      const dots = this.elements.dotsContainer.querySelectorAll(".dot");
-      dots.forEach((dot, idx) => {
-        dot.addEventListener("click", () => {
-          this.goTo(idx);
-          this.startAutoScroll();
-        });
-        dot.addEventListener("keydown", (e) => {
-          if (e.key === "Enter" || e.key === " ") {
-            e.preventDefault();
-            this.goTo(idx);
-            this.startAutoScroll();
-          }
-        });
-      });
-    },
-
-    bindTouchEvents() {
-      let startX = 0;
-      this.elements.track.addEventListener(
-        "touchstart",
-        (e) => {
-          startX = e.touches[0].clientX;
-          this.pauseAutoScroll();
-        },
-        { passive: true }
-      );
-      this.elements.track.addEventListener(
-        "touchend",
-        (e) => {
-          const endX = e.changedTouches[0].clientX;
-          const diff = startX - endX;
-          if (Math.abs(diff) > 50) {
-            if (diff > 0) this.next();
-            else this.prev();
-          }
-          this.startAutoScroll();
-        },
-        { passive: true }
-      );
-    },
-  };
-
-  // Initialize everything when DOM is ready
   function initialize() {
     App.init();
-    ReviewsCarousel.init();
   }
 
   if (document.readyState === "loading") {
@@ -730,9 +508,345 @@
     initialize();
   }
 
-  // Cleanup on page unload (optional, for SPA scenarios)
   window.addEventListener("beforeunload", () => {
     App.destroy?.();
-    ReviewsCarousel.pauseAutoScroll();
   });
+
+  const testimonials = [
+    {
+      name: "Komalpreet Kaur",
+      stars: 5,
+      review:
+        "I had an amazing experience at Rain Dental Clinic! I got implants done by Dr. Anjali, and she was incredibly professional, thorough, and kind throughout the entire process. She took the time to explain every step...",
+    },
+    {
+      name: "Bhakti Dhuri",
+      stars: 5,
+      review:
+        "Had a great experience at Rain Dental clinic. The staff was friendly, and Dr. Anjali was professional and thorough. She explained everything clearly and made me feel comfortable.",
+    },
+    {
+      name: "Mira Rajput",
+      stars: 5,
+      review:
+        "I recently visited this clinic and I couldn't be more satisfied. From the moment I walked in, I was greeted warmly by the staff who were professional and efficient in handling my appointment.",
+    },
+    {
+      name: "Juweriya Imran",
+      stars: 5,
+      review:
+        "Rain Dental by Dr. Anjali is a game-changer! From painless treatments to smile makeovers, her expertise in implants and smile designing is exceptional. The clinic is modern and hygienic.",
+    },
+    {
+      name: "Akshatha Patil",
+      stars: 5,
+      review:
+        "Halfway through my treatment at Rain dental clinic for implants, bridges and crowns—excellent service. Now finished, I'm really happy with the result. Highly recommended!",
+    },
+    {
+      name: "Harshita Raj",
+      stars: 5,
+      review:
+        "I had a wonderful experience. The dentist and staff were kind, professional, and made me feel at ease. The treatment was painless and clearly explained. Highly recommend!",
+    },
+    {
+      name: "Sukhnoor Kaur",
+      stars: 5,
+      review:
+        "Extremely comfortable experience. Staff is very welcoming, polite and helpful. Dr. Anjali made me feel at ease and was very professional throughout. Highly recommend!",
+    },
+    {
+      name: "Vaishnavi Kubal",
+      stars: 5,
+      review:
+        "Had a wonderful experience at Rain Dental clinic. I got my smile designing done with Dr Anjali—she's really the best! Would highly recommend Rain Dental clinic.",
+    },
+    {
+      name: "Simran Kapoor",
+      stars: 5,
+      review:
+        "I had a great experience!! Dr. Anjali did my smile designing and I love the results. The staff was super friendly and made me feel comfortable.",
+    },
+    {
+      name: "Avinash Jha",
+      stars: 5,
+      review:
+        "I would like to thank Dr. Anjali for taking care of all the dental problems my family faced. She is polite, professional, and a one-stop solution for dental needs.",
+    },
+    {
+      name: "Aditi Banerjee",
+      stars: 5,
+      review:
+        "Dr. Anjali is very good at her job. She listens patiently and provides efficient solutions. I've recommended her to all my friends and family.",
+    },
+    {
+      name: "Apurva Jha",
+      stars: 5,
+      review:
+        "Got my root canal done and my sister's smile designing also was done by Dr Anjali. It was a nice experience.",
+    },
+    {
+      name: "Shreya Singh",
+      stars: 5,
+      review:
+        "The staff was friendly and attentive, and the clinic was clean and well-organized. The doctor listened and explained everything clearly. Highly recommended.",
+    },
+    {
+      name: "Riya Deb",
+      stars: 5,
+      review:
+        "Excellent staff, professional and painless treatment. Thank you Dr. Anjali for my new smile.",
+    },
+    {
+      name: "Sanjana Sudhakar",
+      stars: 5,
+      review:
+        "Amazing experience! I'm still surprised I had no pain getting my wisdom tooth out. Staff are friendly and accommodating!",
+    },
+  ];
+
+  const track = document.getElementById("testimonialCarouselTrack");
+  const dots = document.getElementById("testimonialCarouselDots");
+  const prevBtn = document.querySelector(
+    ".testimonial-dots-wrapper .testimonial-nav-prev"
+  );
+  const nextBtn = document.querySelector(
+    ".testimonial-dots-wrapper .testimonial-nav-next"
+  );
+  let current = 0;
+  let autoScroll = null;
+  let isTouching = false;
+  let startX = 0;
+  let deltaX = 0;
+  const slideCount = testimonials.length;
+  const isMobile = () => window.innerWidth < 768;
+  const DOTS_MAX = 5;
+
+  function renderCard(idx) {
+    const t = testimonials[idx];
+    return `<li class="testimonial-card" tabindex="0" aria-label="Testimonial from ${
+      t.name
+    }">
+      <div class="testimonial-stars">${'<svg class="testimonial-star" viewBox="0 0 20 20" aria-hidden="true"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>'.repeat(
+        t.stars
+      )}</div>
+      <blockquote>${t.review}</blockquote>
+      <cite>${t.name}</cite>
+    </li>`;
+  }
+
+  function render() {
+    if (!track) return;
+    track.innerHTML = renderCard(current);
+    renderDots();
+    updateButtons();
+    track.style.transform = `translate3d(0,0,0)`;
+  }
+
+  function renderDots() {
+    if (!dots) return;
+    let html = "";
+    let start = 0;
+    let end = slideCount;
+    if (slideCount > DOTS_MAX) {
+      if (current < Math.floor(DOTS_MAX / 2)) {
+        start = 0;
+        end = DOTS_MAX;
+      } else if (current > slideCount - Math.ceil(DOTS_MAX / 2)) {
+        start = slideCount - DOTS_MAX;
+        end = slideCount;
+      } else {
+        start = current - Math.floor(DOTS_MAX / 2);
+        end = start + DOTS_MAX;
+      }
+    }
+    for (let i = start; i < end; i++) {
+      html += `<button class="testimonial-dot${
+        i === current ? " active" : ""
+      }" aria-label="Go to testimonial ${
+        i + 1
+      }" tabindex="0" data-idx="${i}"></button>`;
+    }
+    dots.innerHTML = html;
+    dots.querySelectorAll(".testimonial-dot").forEach((dot) => {
+      dot.addEventListener("click", (e) => {
+        goTo(parseInt(dot.dataset.idx));
+      });
+      dot.addEventListener("keydown", (e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          goTo(parseInt(dot.dataset.idx));
+        }
+      });
+    });
+    if (slideCount > DOTS_MAX) {
+      const activeDot = dots.querySelector(".active");
+      if (activeDot) {
+        activeDot.scrollIntoView({
+          inline: "center",
+          block: "nearest",
+          behavior: "smooth",
+        });
+      }
+    }
+  }
+
+  const style = document.createElement("style");
+  style.innerHTML = `
+  .testimonial-card {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+    transition: 
+      opacity 0.5s ease,
+      transform 0.5s cubic-bezier(0.25, 1, 0.5, 1);
+  }
+
+  .testimonial-card.anim-out-left {
+    opacity: 0;
+    transform: scale(1.05) translateY(20px);
+    pointer-events: none;
+  }
+
+  .testimonial-card.anim-out-right {
+    opacity: 0;
+    transform: scale(1.05) translateY(-20px);
+    pointer-events: none;
+  }
+
+  .testimonial-card.anim-in-left {
+    opacity: 0;
+    transform: scale(0.9) translateY(-20px);
+  }
+
+  .testimonial-card.anim-in-right {
+    opacity: 0;
+    transform: scale(0.9) translateY(20px);
+  }
+`;
+
+  document.head.appendChild(style);
+
+  function animateTo(idx, direction = 1) {
+    if (!track) return;
+    const oldCard = track.querySelector(".testimonial-card");
+    if (oldCard) {
+      oldCard.classList.add(direction > 0 ? "anim-out-left" : "anim-out-right");
+      setTimeout(() => {
+        track.innerHTML = renderCard(idx);
+        const newCard = track.querySelector(".testimonial-card");
+        newCard.classList.add(direction > 0 ? "anim-in-right" : "anim-in-left");
+        void newCard.offsetWidth;
+        newCard.classList.remove(
+          direction > 0 ? "anim-in-right" : "anim-in-left"
+        );
+        setTimeout(() => {
+          newCard.classList.remove("anim-in-right", "anim-in-left");
+        }, 350);
+        renderDots();
+        updateButtons();
+      }, 300);
+    } else {
+      track.innerHTML = renderCard(idx);
+      renderDots();
+      updateButtons();
+    }
+    track.style.transform = `translate3d(0,0,0)`;
+  }
+
+  function goTo(idx) {
+    const direction = idx > current ? 1 : -1;
+    current = idx;
+    animateTo(current, direction);
+    restartAutoScroll();
+  }
+
+  function prev() {
+    const nextIdx = (current - 1 + slideCount) % slideCount;
+    animateTo(nextIdx, -1);
+    current = nextIdx;
+    restartAutoScroll();
+  }
+
+  function next() {
+    const nextIdx = (current + 1) % slideCount;
+    animateTo(nextIdx, 1);
+    current = nextIdx;
+    restartAutoScroll();
+  }
+
+  function updateButtons() {
+    if (!prevBtn || !nextBtn) return;
+    prevBtn.disabled = slideCount <= 1;
+    nextBtn.disabled = slideCount <= 1;
+    prevBtn.innerHTML = `<svg width="28" height="28" viewBox="0 0 24 24" aria-hidden="true"><path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z" fill="currentColor"/></svg>`;
+    nextBtn.innerHTML = `<svg width="28" height="28" viewBox="0 0 24 24" aria-hidden="true"><path d="M8.59 16.59L10 18l6-6-6-6-1.41 1.41L13.17 12z" fill="currentColor"/></svg>`;
+  }
+
+  function restartAutoScroll() {
+    if (autoScroll) clearInterval(autoScroll);
+    if (!isMobile()) {
+      autoScroll = setInterval(next, 5000);
+    }
+  }
+
+  function stopAutoScroll() {
+    if (autoScroll) clearInterval(autoScroll);
+    autoScroll = null;
+  }
+
+  if (track) {
+    track.addEventListener(
+      "touchstart",
+      (e) => {
+        if (isMobile()) {
+          isTouching = true;
+          startX = e.touches[0].clientX;
+          stopAutoScroll();
+        }
+      },
+      { passive: true }
+    );
+    track.addEventListener(
+      "touchmove",
+      (e) => {
+        if (isTouching) {
+          deltaX = e.touches[0].clientX - startX;
+        }
+      },
+      { passive: true }
+    );
+    track.addEventListener(
+      "touchend",
+      (e) => {
+        if (isTouching) {
+          if (deltaX > 50) prev();
+          else if (deltaX < -50) next();
+          isTouching = false;
+          deltaX = 0;
+          restartAutoScroll();
+        }
+      },
+      { passive: true }
+    );
+  }
+
+  if (track) {
+    track.addEventListener("keydown", (e) => {
+      if (e.key === "ArrowLeft") prev();
+      if (e.key === "ArrowRight") next();
+    });
+  }
+
+  if (prevBtn) prevBtn.addEventListener("click", prev);
+  if (nextBtn) nextBtn.addEventListener("click", next);
+
+  window.addEventListener("resize", () => {
+    render();
+    restartAutoScroll();
+  });
+
+  render();
+  restartAutoScroll();
+
+  window.addEventListener("beforeunload", stopAutoScroll);
 })();
