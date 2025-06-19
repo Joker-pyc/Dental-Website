@@ -512,779 +512,313 @@
     App.destroy?.();
   });
 
-  const testimonials = [
-    {
-      name: "Komalpreet Kaur",
-      stars: 5,
-      review:
-        "I had an amazing experience at Rain Dental Clinic! I got implants done by Dr. Anjali, and she was incredibly professional, thorough, and kind throughout the entire process. She took the time to explain every step...",
-    },
-    {
-      name: "Bhakti Dhuri",
-      stars: 5,
-      review:
-        "Had a great experience at Rain Dental clinic. The staff was friendly, and Dr. Anjali was professional and thorough. She explained everything clearly and made me feel comfortable.",
-    },
-    {
-      name: "Mira Rajput",
-      stars: 5,
-      review:
-        "I recently visited this clinic and I couldn't be more satisfied. From the moment I walked in, I was greeted warmly by the staff who were professional and efficient in handling my appointment.",
-    },
-    {
-      name: "Juweriya Imran",
-      stars: 5,
-      review:
-        "Rain Dental by Dr. Anjali is a game-changer! From painless treatments to smile makeovers, her expertise in implants and smile designing is exceptional. The clinic is modern and hygienic.",
-    },
-    {
-      name: "Akshatha Patil",
-      stars: 5,
-      review:
-        "Halfway through my treatment at Rain dental clinic for implants, bridges and crowns—excellent service. Now finished, I'm really happy with the result. Highly recommended!",
-    },
-    {
-      name: "Harshita Raj",
-      stars: 5,
-      review:
-        "I had a wonderful experience. The dentist and staff were kind, professional, and made me feel at ease. The treatment was painless and clearly explained. Highly recommend!",
-    },
-    {
-      name: "Sukhnoor Kaur",
-      stars: 5,
-      review:
-        "Extremely comfortable experience. Staff is very welcoming, polite and helpful. Dr. Anjali made me feel at ease and was very professional throughout. Highly recommend!",
-    },
-    {
-      name: "Vaishnavi Kubal",
-      stars: 5,
-      review:
-        "Had a wonderful experience at Rain Dental clinic. I got my smile designing done with Dr Anjali—she's really the best! Would highly recommend Rain Dental clinic.",
-    },
-    {
-      name: "Simran Kapoor",
-      stars: 5,
-      review:
-        "I had a great experience!! Dr. Anjali did my smile designing and I love the results. The staff was super friendly and made me feel comfortable.",
-    },
-    {
-      name: "Avinash Jha",
-      stars: 5,
-      review:
-        "I would like to thank Dr. Anjali for taking care of all the dental problems my family faced. She is polite, professional, and a one-stop solution for dental needs.",
-    },
-    {
-      name: "Aditi Banerjee",
-      stars: 5,
-      review:
-        "Dr. Anjali is very good at her job. She listens patiently and provides efficient solutions. I've recommended her to all my friends and family.",
-    },
-    {
-      name: "Apurva Jha",
-      stars: 5,
-      review:
-        "Got my root canal done and my sister's smile designing also was done by Dr Anjali. It was a nice experience.",
-    },
-    {
-      name: "Shreya Singh",
-      stars: 5,
-      review:
-        "The staff was friendly and attentive, and the clinic was clean and well-organized. The doctor listened and explained everything clearly. Highly recommended.",
-    },
-    {
-      name: "Riya Deb",
-      stars: 5,
-      review:
-        "Excellent staff, professional and painless treatment. Thank you Dr. Anjali for my new smile.",
-    },
-    {
-      name: "Sanjana Sudhakar",
-      stars: 5,
-      review:
-        "Amazing experience! I'm still surprised I had no pain getting my wisdom tooth out. Staff are friendly and accommodating!",
-    },
-  ];
-
-  const track = document.getElementById("testimonialCarouselTrack");
-  const dots = document.getElementById("testimonialCarouselDots");
-  const prevBtn = document.querySelector(
-    ".testimonial-dots-wrapper .testimonial-nav-prev"
-  );
-  const nextBtn = document.querySelector(
-    ".testimonial-dots-wrapper .testimonial-nav-next"
-  );
-  let current = 0;
-  let autoScroll = null;
-  let isTouching = false;
-  let startX = 0;
-  let deltaX = 0;
-  const slideCount = testimonials.length;
-  const isMobile = () => window.innerWidth < 768;
-  const DOTS_MAX = 5;
-
-  function renderCard(idx) {
-    const t = testimonials[idx];
-    return `<li class="testimonial-card" tabindex="0" aria-label="Testimonial from ${
-      t.name
-    }">
-      <div class="testimonial-stars">${'<svg class="testimonial-star" viewBox="0 0 20 20" aria-hidden="true"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>'.repeat(
-        t.stars
-      )}</div>
-      <blockquote>${t.review}</blockquote>
-      <cite>${t.name}</cite>
-    </li>`;
-  }
-
-  function render() {
-    if (!track) return;
-    track.innerHTML = renderCard(current);
-    renderDots();
-    updateButtons();
-    track.style.transform = `translate3d(0,0,0)`;
-  }
-
-  function renderDots() {
-    if (!dots) return;
-    let html = "";
-    let start = 0;
-    let end = slideCount;
-    if (slideCount > DOTS_MAX) {
-      if (current < Math.floor(DOTS_MAX / 2)) {
-        start = 0;
-        end = DOTS_MAX;
-      } else if (current > slideCount - Math.ceil(DOTS_MAX / 2)) {
-        start = slideCount - DOTS_MAX;
-        end = slideCount;
-      } else {
-        start = current - Math.floor(DOTS_MAX / 2);
-        end = start + DOTS_MAX;
-      }
+  function createTestimonialCarousel() {
+    const testimonials = [
+      {
+        name: "Komalpreet Kaur",
+        stars: 5,
+        review:
+          "I had an amazing experience at Rain Dental Clinic! I got implants done by Dr. Anjali, and she was incredibly professional, thorough, and kind throughout the entire process. She took the time to explain every step, ensuring I felt comfortable and informed. Highly recommended!",
+      },
+      {
+        name: "Bhakti Dhuri",
+        stars: 5,
+        review:
+          "Had a great experience at Rain Dental clinic. The staff was friendly, and Dr. Anjali was professional and thorough. She took the time to explain everything and made me feel comfortable throughout the procedure. The clinic was clean, and the service was excellent. Highly recommend!",
+      },
+      {
+        name: "Mira Rajput",
+        stars: 5,
+        review:
+          "I recently visited this clinic and I couldn't be more satisfied with my experience. From the moment I walked in, I was greeted warmly by the front desk staff who were professional and efficient in handling my appointment.",
+      },
+      {
+        name: "Juweriya Imran",
+        stars: 5,
+        review:
+          "Rain Dental by Dr. Anjali is truly a game-changer in dental care! From painless treatments to stunning smile makeovers, Dr. Anjali's expertise in implants and smile designing is exceptional. The clinic is modern, hygienic, and equipped with the latest technology.",
+      },
+      {
+        name: "Akshatha Patil",
+        stars: 5,
+        review:
+          "Halfway through my treatment at Rain dental clinic Mumbai for implants, bridges and crowns, excellent treatment and service throughout, highly recommended. Now finished with my second and final visit, I'm really happy with final result, I would recommend anyone needing implants and/or crowns or both to make contact Dr. Anjali.",
+      },
+      {
+        name: "Harshita Raj",
+        stars: 5,
+        review:
+          "I had a wonderful experience. The dentist and staff were kind, professional, and made me feel at ease. The treatment was painless, and they explained everything step by step. The clinic was clean and had a welcoming environment. I will definitely be coming back and recommending it to others!",
+      },
+      {
+        name: "Sukhnoor Kaur",
+        stars: 5,
+        review:
+          "It was an extremely comfortable experience. The staff is very welcoming, polite and helpful. Dr. Anjali made me feel at ease and was very professional throughout. Highly recommend this clinic.",
+      },
+      {
+        name: "Vaishnavi Kubal",
+        stars: 5,
+        review:
+          "Had a wonderful experience at Rain Dental clinic. I got my smile designing done with Dr Anjali and she's really the best! Would highly recommend Rain Dental clinic.",
+      },
+      {
+        name: "Simran Kapoor",
+        stars: 5,
+        review:
+          "I had a great experience!! Dr. Anjali did my smile designing and I love the results. The staff was super friendly and made me feel comfortable.",
+      },
+      {
+        name: "Avinash Jha",
+        stars: 5,
+        review:
+          "I would like to thank Dr. Anjali for taking care of all the dental problems my family faced. She is polite and very professional in her work. One stop solution for all dental problems. Thank you doctor 😊",
+      },
+      {
+        name: "Ravi Jha",
+        stars: 5,
+        review:
+          "Dr Anjali and her staff were so helpful and patient, they really guided me so well and she really heard and understood my dental problems and even corrected my previous dental treatment which was incorrectly done. Thank you so much Dr Anjali!",
+      },
+      {
+        name: "Aditi Banerjee",
+        stars: 5,
+        review:
+          "Dr Anjali is very good at her job. She listens patiently and provides efficient solutions to patients' problems. I have recommended her to all my friends and family.",
+      },
+      {
+        name: "Apurva Jha",
+        stars: 5,
+        review:
+          "Got my root canal done and my sister's smile designing also was done by Dr Anjali. It was a nice experience.",
+      },
+      {
+        name: "Shreya Singh",
+        stars: 5,
+        review:
+          "The staff was friendly and attentive, and the clinic was clean and well-organized. The doctor took the time to listen to my concerns and explained everything clearly. I highly recommend.",
+      },
+      {
+        name: "Riya Deb",
+        stars: 5,
+        review:
+          "Good Experience… Excellent staff, we enjoyed the good atmosphere… Dental treatment with highly qualified, painless and professional. Thank you Dr. Anjali for my new smile.",
+      },
+      {
+        name: "Sanjana Sudhakar",
+        stars: 5,
+        review:
+          "Amazing experience! I'm still pleasantly surprised that I had no pain getting my wisdom tooth out. All the staff are so friendly and accommodating :)",
+      },
+      {
+        name: "Khan Altamash",
+        stars: 5,
+        review:
+          "The doctor is well skilled! The staff is nicely trained and the clinic is highly advanced and neat. A must visit for all dental needs!",
+      },
+      {
+        name: "Sangita Jha",
+        stars: 5,
+        review:
+          "Dr Anjali really understands the root of dental problem and her treatment is by far the best in this area, if not city. Thank you!",
+      },
+      {
+        name: "Vaishaki Pawar",
+        stars: 5,
+        review:
+          "Got my implants done by Dr Anjali Jha. Never thought it would go so smooth. She made it easy for me. Thank you doc!",
+      },
+      {
+        name: "Siva Cva",
+        stars: 5,
+        review:
+          "Brilliant and best 👍💯 and thank you ma'am Dr. Anjali for my dental pain relief 😀",
+      },
+      {
+        name: "Nvisha Sharma",
+        stars: 5,
+        review: "I got my smile designing done by Dr Anjali and it was great.",
+      },
+      {
+        name: "Kavya Soni",
+        stars: 5,
+        review:
+          "I had a great experience getting my smile designed at this clinic.",
+      },
+      {
+        name: "Ranjeet Thakur",
+        stars: 5,
+        review: "Dr Anjali is a good doctor and does good work.",
+      },
+    ];
+    const track = document.getElementById("testimonialCarouselTrack");
+    const dots = document.getElementById("testimonialCarouselDots");
+    const prevBtn = document.querySelector(
+      ".testimonial-dots-wrapper .testimonial-nav-prev"
+    );
+    const nextBtn = document.querySelector(
+      ".testimonial-dots-wrapper .testimonial-nav-next"
+    );
+    if (!track || !dots || !prevBtn || !nextBtn) return;
+    let current = 0;
+    let autoScroll = null;
+    let autoScrollTimeout = null;
+    let autoScrollPaused = false;
+    const AUTO_SCROLL_INTERVAL = 5000;
+    const AUTO_SCROLL_RESUME_DELAY = 2000;
+    const DOTS_MAX = 5;
+    const slideCount = testimonials.length;
+    function renderCard(idx) {
+      const t = testimonials[idx];
+      return `<li class="testimonial-card" tabindex="0" aria-label="Testimonial from ${
+        t.name
+      }">
+        <div class="testimonial-stars">${'<svg class="testimonial-star" viewBox="0 0 20 20" aria-hidden="true"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>'.repeat(
+          t.stars
+        )}</div>
+        <blockquote>${t.review}</blockquote>
+        <cite>${t.name}</cite>
+      </li>`;
     }
-    for (let i = start; i < end; i++) {
-      html += `<button class="testimonial-dot${
-        i === current ? " active" : ""
-      }" aria-label="Go to testimonial ${
-        i + 1
-      }" tabindex="0" data-idx="${i}"></button>`;
-    }
-    dots.innerHTML = html;
-    dots.querySelectorAll(".testimonial-dot").forEach((dot) => {
-      dot.addEventListener("click", (e) => {
-        goTo(parseInt(dot.dataset.idx));
-      });
-      dot.addEventListener("keydown", (e) => {
-        if (e.key === "Enter" || e.key === " ") {
-          e.preventDefault();
-          goTo(parseInt(dot.dataset.idx));
-        }
-      });
-    });
-    if (slideCount > DOTS_MAX) {
-      const activeDot = dots.querySelector(".active");
-      const testimonialSection =
-        document.getElementById("testimonials") ||
-        document.querySelector(".testimonial-section");
-      if (activeDot && testimonialSection) {
-        const rect = testimonialSection.getBoundingClientRect();
-        const inView = rect.top < window.innerHeight && rect.bottom > 0;
-        if (inView) {
-          activeDot.scrollIntoView({
-            inline: "center",
-            block: "nearest",
-            behavior: "smooth",
-          });
-        }
-      }
-    }
-  }
-
-  function animateTo(idx, direction = 1) {
-    if (!track) return;
-    const oldCard = track.querySelector(".testimonial-card");
-    if (oldCard) {
-      oldCard.classList.add(direction > 0 ? "anim-out-left" : "anim-out-right");
-      setTimeout(() => {
-        track.innerHTML = renderCard(idx);
-        const newCard = track.querySelector(".testimonial-card");
-        newCard.classList.add(direction > 0 ? "anim-in-right" : "anim-in-left");
-        void newCard.offsetWidth;
-        newCard.classList.remove(
-          direction > 0 ? "anim-in-right" : "anim-in-left"
-        );
-        setTimeout(() => {
-          newCard.classList.remove("anim-in-right", "anim-in-left");
-        }, 350);
-        renderDots();
-        updateButtons();
-      }, 300);
-    } else {
-      track.innerHTML = renderCard(idx);
+    function render() {
+      track.innerHTML = renderCard(current);
       renderDots();
       updateButtons();
+      track.style.transform = `translate3d(0,0,0)`;
     }
-    track.style.transform = `translate3d(0,0,0)`;
-  }
-
-  function goTo(idx) {
-    const direction = idx > current ? 1 : -1;
-    current = idx;
-    animateTo(current, direction);
-    restartAutoScroll();
-  }
-
-  function prev() {
-    const nextIdx = (current - 1 + slideCount) % slideCount;
-    animateTo(nextIdx, -1);
-    current = nextIdx;
-    restartAutoScroll();
-  }
-
-  function next() {
-    const nextIdx = (current + 1) % slideCount;
-    animateTo(nextIdx, 1);
-    current = nextIdx;
-    restartAutoScroll();
-  }
-
-  function updateButtons() {
-    if (!prevBtn || !nextBtn) return;
-    prevBtn.disabled = slideCount <= 1;
-    nextBtn.disabled = slideCount <= 1;
-    prevBtn.innerHTML = `<svg width="28" height="28" viewBox="0 0 24 24" aria-hidden="true"><path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z" fill="currentColor"/></svg>`;
-    nextBtn.innerHTML = `<svg width="28" height="28" viewBox="0 0 24 24" aria-hidden="true"><path d="M8.59 16.59L10 18l6-6-6-6-1.41 1.41L13.17 12z" fill="currentColor"/></svg>`;
-  }
-
-  function restartAutoScroll() {
-    if (autoScroll) clearInterval(autoScroll);
-    if (!isMobile()) {
-      autoScroll = setInterval(next, 5000);
-    }
-  }
-
-  function stopAutoScroll() {
-    if (autoScroll) clearInterval(autoScroll);
-    autoScroll = null;
-  }
-
-  if (track) {
-    track.addEventListener(
-      "touchstart",
-      (e) => {
-        if (isMobile()) {
-          isTouching = true;
-          startX = e.touches[0].clientX;
-          stopAutoScroll();
+    function renderDots() {
+      let html = "";
+      let start = 0;
+      let end = slideCount;
+      if (slideCount > DOTS_MAX) {
+        if (current < Math.floor(DOTS_MAX / 2)) {
+          start = 0;
+          end = DOTS_MAX;
+        } else if (current > slideCount - Math.ceil(DOTS_MAX / 2)) {
+          start = slideCount - DOTS_MAX;
+          end = slideCount;
+        } else {
+          start = current - Math.floor(DOTS_MAX / 2);
+          end = start + DOTS_MAX;
         }
-      },
-      { passive: true }
-    );
-    track.addEventListener(
-      "touchmove",
-      (e) => {
-        if (isTouching) {
-          deltaX = e.touches[0].clientX - startX;
-        }
-      },
-      { passive: true }
-    );
-    track.addEventListener(
-      "touchend",
-      (e) => {
-        if (isTouching) {
-          if (deltaX > 50) prev();
-          else if (deltaX < -50) next();
-          isTouching = false;
-          deltaX = 0;
-          restartAutoScroll();
-        }
-      },
-      { passive: true }
-    );
-  }
-
-  if (track) {
-    track.addEventListener("keydown", (e) => {
-      if (e.key === "ArrowLeft") prev();
-      if (e.key === "ArrowRight") next();
-    });
-  }
-
-  if (prevBtn) prevBtn.addEventListener("click", prev);
-  if (nextBtn) nextBtn.addEventListener("click", next);
-
-  window.addEventListener("resize", () => {
-    render();
-    restartAutoScroll();
-  });
-
-  render();
-  restartAutoScroll();
-
-  window.addEventListener("beforeunload", stopAutoScroll);
-
-  // --- Testimonial Carousel Modern Upgrade ---
-  // 1. Add a progress bar element to the DOM if not present
-  const progressBarId = "testimonialCarouselProgress";
-  let progressBar = document.getElementById(progressBarId);
-  if (!progressBar) {
-    progressBar = document.createElement("div");
-    progressBar.id = progressBarId;
-    progressBar.setAttribute("aria-hidden", "true");
-    progressBar.style.position = "absolute";
-    progressBar.style.left = "0";
-    progressBar.style.right = "0";
-    progressBar.style.bottom = "0";
-    progressBar.style.height = "4px";
-    progressBar.style.background = "rgba(255,255,255,0.12)";
-    progressBar.innerHTML =
-      '<div class="testimonial-progress-bar-inner"></div>';
-    const wrapper = document.querySelector(".testimonial-carousel-wrapper");
-    if (wrapper) wrapper.appendChild(progressBar);
-  }
-  const progressInner = progressBar.querySelector(
-    ".testimonial-progress-bar-inner"
-  );
-
-  // --- Carousel State ---
-  let isDragging = false;
-  let dragStartX = 0;
-  let dragStartY = 0;
-  let dragDeltaX = 0;
-  let dragDeltaY = 0;
-  let dragLastX = 0;
-  let dragStartTime = 0;
-  let dragVelocity = 0;
-  let dragDirection = 0;
-  let autoScrollTimeout = null;
-  let autoScrollPaused = false;
-  const AUTO_SCROLL_INTERVAL = 5000;
-  const AUTO_SCROLL_RESUME_DELAY = 2000;
-
-  // --- Helper: Animate Progress Bar ---
-  function startProgressBar() {
-    if (!progressInner) return;
-    progressInner.style.transition = "none";
-    progressInner.style.width = "0%";
-    setTimeout(() => {
-      progressInner.style.transition = `width ${AUTO_SCROLL_INTERVAL}ms linear`;
-      progressInner.style.width = "100%";
-    }, 20);
-  }
-  function resetProgressBar() {
-    if (!progressInner) return;
-    progressInner.style.transition = "none";
-    progressInner.style.width = "0%";
-  }
-
-  // --- Touch/Mouse Drag Handlers ---
-  function onDragStart(e) {
-    if (e.type === "touchstart") {
-      dragStartX = e.touches[0].clientX;
-      dragStartY = e.touches[0].clientY;
-    } else {
-      dragStartX = e.clientX;
-      dragStartY = e.clientY;
-      document.addEventListener("mousemove", onDragMove);
-      document.addEventListener("mouseup", onDragEnd);
-    }
-    isDragging = true;
-    dragDeltaX = 0;
-    dragDeltaY = 0;
-    dragLastX = dragStartX;
-    dragStartTime = Date.now();
-    dragVelocity = 0;
-    dragDirection = 0;
-    stopAutoScroll();
-    resetProgressBar();
-  }
-  function onDragMove(e) {
-    if (!isDragging) return;
-    let x, y;
-    if (e.type === "touchmove") {
-      x = e.touches[0].clientX;
-      y = e.touches[0].clientY;
-    } else {
-      x = e.clientX;
-      y = e.clientY;
-    }
-    dragDeltaX = x - dragStartX;
-    dragDeltaY = y - dragStartY;
-    dragDirection = Math.abs(dragDeltaX) > Math.abs(dragDeltaY) ? 1 : 0;
-    // Only preventDefault if horizontal swipe
-    if (dragDirection && Math.abs(dragDeltaX) > 10) {
-      e.preventDefault?.();
-    }
-    // Move slide visually
-    if (track) {
-      track.style.transition = "none";
-      track.style.transform = `translate3d(${dragDeltaX}px,0,0)`;
-    }
-    dragVelocity = x - dragLastX;
-    dragLastX = x;
-  }
-  function onDragEnd(e) {
-    if (!isDragging) return;
-    isDragging = false;
-    // Touch angle detection: only swipe if horizontal angle < 30deg
-    const angle = Math.abs(
-      (Math.atan2(dragDeltaY, dragDeltaX) * 180) / Math.PI
-    );
-    let shouldSwipe = dragDirection && Math.abs(dragDeltaX) > 40 && angle < 30;
-    let momentum = Math.abs(dragVelocity) > 10;
-    if (shouldSwipe || momentum) {
-      if (dragDeltaX < 0) next();
-      else if (dragDeltaX > 0) prev();
-    } else {
-      // Snap back
-      if (track) {
-        track.style.transition = "transform 0.4s cubic-bezier(0.4,0,0.2,1)";
-        track.style.transform = "translate3d(0,0,0)";
       }
+      for (let i = start; i < end; i++) {
+        html += `<button class="testimonial-dot${
+          i === current ? " active" : ""
+        }" aria-label="Go to testimonial ${
+          i + 1
+        }" tabindex="0" data-idx="${i}"></button>`;
+      }
+      dots.innerHTML = html;
+      dots.querySelectorAll(".testimonial-dot").forEach((dot) => {
+        dot.addEventListener("click", (e) => {
+          goTo(parseInt(dot.dataset.idx));
+        });
+        dot.addEventListener("keydown", (e) => {
+          if (e.key === "Enter" || e.key === " ") {
+            e.preventDefault();
+            goTo(parseInt(dot.dataset.idx));
+          }
+        });
+      });
     }
-    dragDeltaX = 0;
-    dragDeltaY = 0;
-    dragVelocity = 0;
-    dragDirection = 0;
-    if (e.type === "mouseup") {
-      document.removeEventListener("mousemove", onDragMove);
-      document.removeEventListener("mouseup", onDragEnd);
-    }
-    setTimeout(() => {
-      autoScrollPaused = false;
-      restartAutoScroll();
-      startProgressBar();
-    }, AUTO_SCROLL_RESUME_DELAY);
-  }
-
-  // --- Auto-Scroll with Pause/Resume ---
-  function restartAutoScroll() {
-    if (autoScroll) clearInterval(autoScroll);
-    if (autoScrollTimeout) clearTimeout(autoScrollTimeout);
-    if (!autoScrollPaused) {
-      autoScroll = setInterval(() => {
-        next();
-        startProgressBar();
-      }, AUTO_SCROLL_INTERVAL);
-      startProgressBar();
-    }
-  }
-  function stopAutoScroll() {
-    if (autoScroll) clearInterval(autoScroll);
-    autoScroll = null;
-    resetProgressBar();
-  }
-  function pauseAutoScroll() {
-    autoScrollPaused = true;
-    stopAutoScroll();
-    if (autoScrollTimeout) clearTimeout(autoScrollTimeout);
-  }
-  function resumeAutoScroll() {
-    autoScrollPaused = false;
-    restartAutoScroll();
-  }
-
-  // --- Event Listeners ---
-  if (track) {
-    // Touch events
-    track.addEventListener("touchstart", onDragStart, { passive: false });
-    track.addEventListener("touchmove", onDragMove, { passive: false });
-    track.addEventListener("touchend", onDragEnd, { passive: true });
-    // Mouse events
-    track.addEventListener("mousedown", onDragStart);
-    // Pause/resume on hover/touch
-    track.addEventListener("mouseenter", pauseAutoScroll);
-    track.addEventListener("mouseleave", () => {
-      autoScrollTimeout = setTimeout(
-        resumeAutoScroll,
-        AUTO_SCROLL_RESUME_DELAY
-      );
-    });
-    track.addEventListener("touchstart", pauseAutoScroll, { passive: false });
-    track.addEventListener(
-      "touchend",
-      () => {
-        autoScrollTimeout = setTimeout(
-          resumeAutoScroll,
-          AUTO_SCROLL_RESUME_DELAY
+    function animateTo(idx, direction = 1) {
+      const oldCard = track.querySelector(".testimonial-card");
+      if (oldCard) {
+        oldCard.classList.add(
+          direction > 0 ? "anim-out-left" : "anim-out-right"
         );
-      },
-      { passive: true }
-    );
-  }
-
-  // --- Accessibility: Keyboard Navigation ---
-  if (track) {
-    track.addEventListener("keydown", (e) => {
-      if (e.key === "ArrowLeft") prev();
-      if (e.key === "ArrowRight") next();
-    });
-  }
-  if (prevBtn) prevBtn.addEventListener("click", prev);
-  if (nextBtn) nextBtn.addEventListener("click", next);
-
-  window.addEventListener("resize", () => {
-    render();
-    restartAutoScroll();
-  });
-
-  render();
-  restartAutoScroll();
-  window.addEventListener("beforeunload", stopAutoScroll);
-
-  // --- Infinite Carousel Upgrade ---
-  // 1. Clone first and last slides for seamless infinite effect
-  function setupInfiniteCarousel() {
-    if (!track) return;
-    // Remove all children
-    while (track.firstChild) track.removeChild(track.firstChild);
-    // Clone last, all, first
-    const slides = testimonials.map((_, idx) => renderCard(idx));
-    const first = slides[0];
-    const last = slides[slides.length - 1];
-    track.insertAdjacentHTML("beforeend", last); // clone last at start
-    slides.forEach((html) => track.insertAdjacentHTML("beforeend", html));
-    track.insertAdjacentHTML("beforeend", first); // clone first at end
-    // Set initial position
-    track.style.transition = "none";
-    track.style.transform = `translate3d(-100%,0,0)`;
-  }
-
-  let infiniteCurrent = 1; // index in the DOM (1 = first real slide)
-  function goToInfinite(idx, animate = true) {
-    if (!track) return;
-    infiniteCurrent = idx;
-    if (animate) {
-      track.style.transition = "transform 0.45s cubic-bezier(0.4,0,0.2,1)";
-    } else {
-      track.style.transition = "none";
-    }
-    track.style.transform = `translate3d(${-100 * infiniteCurrent}%,0,0)`;
-    // After transition, if at clone, jump to real
-    setTimeout(
-      () => {
-        if (infiniteCurrent === 0) {
-          track.style.transition = "none";
-          infiniteCurrent = slideCount;
-          track.style.transform = `translate3d(${-100 * infiniteCurrent}%,0,0)`;
-        } else if (infiniteCurrent === slideCount + 1) {
-          track.style.transition = "none";
-          infiniteCurrent = 1;
-          track.style.transform = `translate3d(${-100 * infiniteCurrent}%,0,0)`;
-        }
-        renderDotsInfinite();
-        updateButtons();
-      },
-      animate ? 460 : 0
-    );
-  }
-  function nextInfinite() {
-    goToInfinite(infiniteCurrent + 1, true);
-    restartAutoScroll();
-  }
-  function prevInfinite() {
-    goToInfinite(infiniteCurrent - 1, true);
-    restartAutoScroll();
-  }
-  function renderDotsInfinite() {
-    if (!dots) return;
-    let html = "";
-    let start = 0;
-    let end = slideCount;
-    if (slideCount > DOTS_MAX) {
-      if (infiniteCurrent - 1 < Math.floor(DOTS_MAX / 2)) {
-        start = 0;
-        end = DOTS_MAX;
-      } else if (infiniteCurrent - 1 > slideCount - Math.ceil(DOTS_MAX / 2)) {
-        start = slideCount - DOTS_MAX;
-        end = slideCount;
+        setTimeout(() => {
+          track.innerHTML = renderCard(idx);
+          const newCard = track.querySelector(".testimonial-card");
+          newCard.classList.add(
+            direction > 0 ? "anim-in-right" : "anim-in-left"
+          );
+          void newCard.offsetWidth;
+          newCard.classList.remove(
+            direction > 0 ? "anim-in-right" : "anim-in-left"
+          );
+          setTimeout(() => {
+            newCard.classList.remove("anim-in-right", "anim-in-left");
+          }, 350);
+          renderDots();
+          updateButtons();
+        }, 300);
       } else {
-        start = infiniteCurrent - 1 - Math.floor(DOTS_MAX / 2);
-        end = start + DOTS_MAX;
+        track.innerHTML = renderCard(idx);
+        renderDots();
+        updateButtons();
       }
+      track.style.transform = `translate3d(0,0,0)`;
     }
-    for (let i = start; i < end; i++) {
-      html += `<button class="testimonial-dot${
-        i === infiniteCurrent - 1 ? " active" : ""
-      }" aria-label="Go to testimonial ${
-        i + 1
-      }" tabindex="0" data-idx="${i}"></button>`;
-    }
-    dots.innerHTML = html;
-    dots.querySelectorAll(".testimonial-dot").forEach((dot) => {
-      dot.addEventListener("click", (e) => {
-        goToInfinite(parseInt(dot.dataset.idx) + 1, true);
-      });
-      dot.addEventListener("keydown", (e) => {
-        if (e.key === "Enter" || e.key === " ") {
-          e.preventDefault();
-          goToInfinite(parseInt(dot.dataset.idx) + 1, true);
-        }
-      });
-    });
-  }
-  // --- Touch/Mouse Drag for Infinite Carousel ---
-  let infiniteDragStartX = 0;
-  let infiniteDragStartY = 0;
-  let infiniteDragDeltaX = 0;
-  let infiniteDragDeltaY = 0;
-  let infiniteDragging = false;
-  let infiniteDragLastX = 0;
-  let infiniteDragVelocity = 0;
-  let infiniteDragDirection = 0;
-  function onInfiniteDragStart(e) {
-    if (e.type === "touchstart") {
-      infiniteDragStartX = e.touches[0].clientX;
-      infiniteDragStartY = e.touches[0].clientY;
-    } else {
-      infiniteDragStartX = e.clientX;
-      infiniteDragStartY = e.clientY;
-      document.addEventListener("mousemove", onInfiniteDragMove);
-      document.addEventListener("mouseup", onInfiniteDragEnd);
-    }
-    infiniteDragging = true;
-    infiniteDragDeltaX = 0;
-    infiniteDragDeltaY = 0;
-    infiniteDragLastX = infiniteDragStartX;
-    infiniteDragVelocity = 0;
-    infiniteDragDirection = 0;
-    stopAutoScroll();
-    resetProgressBar();
-    if (track) track.classList.add("dragging");
-  }
-  function onInfiniteDragMove(e) {
-    if (!infiniteDragging) return;
-    let x, y;
-    if (e.type === "touchmove") {
-      x = e.touches[0].clientX;
-      y = e.touches[0].clientY;
-    } else {
-      x = e.clientX;
-      y = e.clientY;
-    }
-    infiniteDragDeltaX = x - infiniteDragStartX;
-    infiniteDragDeltaY = y - infiniteDragStartY;
-    infiniteDragDirection =
-      Math.abs(infiniteDragDeltaX) > Math.abs(infiniteDragDeltaY) ? 1 : 0;
-    // Only preventDefault if horizontal swipe and angle < 30deg
-    const angle = Math.abs(
-      (Math.atan2(infiniteDragDeltaY, infiniteDragDeltaX) * 180) / Math.PI
-    );
-    if (
-      infiniteDragDirection &&
-      Math.abs(infiniteDragDeltaX) > 10 &&
-      angle < 30
-    ) {
-      e.preventDefault?.();
-    }
-    // Move slide visually
-    if (track) {
-      track.style.transition = "none";
-      track.style.transform = `translate3d(${
-        -100 * infiniteCurrent + (infiniteDragDeltaX / track.offsetWidth) * 100
-      }%,0,0)`;
-    }
-    infiniteDragVelocity = x - infiniteDragLastX;
-    infiniteDragLastX = x;
-  }
-  function onInfiniteDragEnd(e) {
-    if (!infiniteDragging) return;
-    infiniteDragging = false;
-    if (track) track.classList.remove("dragging");
-    // Touch angle detection: only swipe if horizontal angle < 30deg
-    const angle = Math.abs(
-      (Math.atan2(infiniteDragDeltaY, infiniteDragDeltaX) * 180) / Math.PI
-    );
-    let shouldSwipe =
-      infiniteDragDirection && Math.abs(infiniteDragDeltaX) > 40 && angle < 30;
-    let momentum = Math.abs(infiniteDragVelocity) > 10;
-    if (shouldSwipe || momentum) {
-      if (infiniteDragDeltaX < 0) nextInfinite();
-      else if (infiniteDragDeltaX > 0) prevInfinite();
-    } else {
-      // Snap back
-      if (track) {
-        track.style.transition = "transform 0.4s cubic-bezier(0.4,0,0.2,1)";
-        track.style.transform = `translate3d(${-100 * infiniteCurrent}%,0,0)`;
-      }
-    }
-    infiniteDragDeltaX = 0;
-    infiniteDragDeltaY = 0;
-    infiniteDragVelocity = 0;
-    infiniteDragDirection = 0;
-    if (e.type === "mouseup") {
-      document.removeEventListener("mousemove", onInfiniteDragMove);
-      document.removeEventListener("mouseup", onInfiniteDragEnd);
-    }
-    setTimeout(() => {
-      autoScrollPaused = false;
+    function goTo(idx) {
+      const direction = idx > current ? 1 : -1;
+      current = idx;
+      animateTo(current, direction);
       restartAutoScroll();
-      startProgressBar();
-    }, AUTO_SCROLL_RESUME_DELAY);
-  }
-  // --- Replace old carousel logic with infinite version ---
-  function initInfiniteCarousel() {
-    setupInfiniteCarousel();
-    goToInfinite(1, false);
-    // Touch events
-    track.addEventListener("touchstart", onInfiniteDragStart, {
-      passive: false,
-    });
-    track.addEventListener("touchmove", onInfiniteDragMove, { passive: false });
-    track.addEventListener("touchend", onInfiniteDragEnd, { passive: true });
-    // Mouse events
-    track.addEventListener("mousedown", onInfiniteDragStart);
-    // Pause/resume on hover/touch
-    track.addEventListener("mouseenter", pauseAutoScroll);
-    track.addEventListener("mouseleave", () => {
-      autoScrollTimeout = setTimeout(
-        resumeAutoScroll,
-        AUTO_SCROLL_RESUME_DELAY
-      );
-    });
-    track.addEventListener("touchstart", pauseAutoScroll, { passive: false });
-    track.addEventListener(
-      "touchend",
-      () => {
-        autoScrollTimeout = setTimeout(
-          resumeAutoScroll,
-          AUTO_SCROLL_RESUME_DELAY
-        );
-      },
-      { passive: true }
-    );
-    // Keyboard navigation
-    track.addEventListener("keydown", (e) => {
-      if (e.key === "ArrowLeft") prevInfinite();
-      if (e.key === "ArrowRight") nextInfinite();
-    });
-    if (prevBtn) prevBtn.addEventListener("click", prevInfinite);
-    if (nextBtn) nextBtn.addEventListener("click", nextInfinite);
-    window.addEventListener("resize", () => {
-      setupInfiniteCarousel();
-      goToInfinite(infiniteCurrent, false);
+    }
+    function prev() {
+      const nextIdx = (current - 1 + slideCount) % slideCount;
+      animateTo(nextIdx, -1);
+      current = nextIdx;
       restartAutoScroll();
-    });
-    renderDotsInfinite();
-    restartAutoScroll = function () {
+    }
+    function next() {
+      const nextIdx = (current + 1) % slideCount;
+      animateTo(nextIdx, 1);
+      current = nextIdx;
+      restartAutoScroll();
+    }
+    function updateButtons() {
+      prevBtn.disabled = slideCount <= 1;
+      nextBtn.disabled = slideCount <= 1;
+      prevBtn.innerHTML = `<svg width="28" height="28" viewBox="0 0 24 24" aria-hidden="true"><path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z" fill="currentColor"/></svg>`;
+      nextBtn.innerHTML = `<svg width="28" height="28" viewBox="0 0 24 24" aria-hidden="true"><path d="M8.59 16.59L10 18l6-6-6-6-1.41 1.41L13.17 12z" fill="currentColor"/></svg>`;
+    }
+    function restartAutoScroll() {
       if (autoScroll) clearInterval(autoScroll);
       if (autoScrollTimeout) clearTimeout(autoScrollTimeout);
       if (!autoScrollPaused) {
-        autoScroll = setInterval(() => {
-          nextInfinite();
-          startProgressBar();
-        }, AUTO_SCROLL_INTERVAL);
-        startProgressBar();
+        autoScroll = setInterval(next, AUTO_SCROLL_INTERVAL);
       }
-    };
-    stopAutoScroll = function () {
+    }
+    function stopAutoScroll() {
       if (autoScroll) clearInterval(autoScroll);
       autoScroll = null;
-      resetProgressBar();
-    };
-    render = function () {}; // disable old render
+    }
+    function pauseAutoScroll() {
+      autoScrollPaused = true;
+      stopAutoScroll();
+      if (autoScrollTimeout) clearTimeout(autoScrollTimeout);
+    }
+    function resumeAutoScroll() {
+      autoScrollPaused = false;
+      restartAutoScroll();
+    }
+    prevBtn.addEventListener("click", prev);
+    nextBtn.addEventListener("click", next);
+    track.addEventListener("mouseenter", pauseAutoScroll);
+    track.addEventListener("mouseleave", () => {
+      autoScrollTimeout = setTimeout(
+        resumeAutoScroll,
+        AUTO_SCROLL_RESUME_DELAY
+      );
+    });
+    track.addEventListener("touchstart", pauseAutoScroll, { passive: false });
+    track.addEventListener(
+      "touchend",
+      () => {
+        autoScrollTimeout = setTimeout(
+          resumeAutoScroll,
+          AUTO_SCROLL_RESUME_DELAY
+        );
+      },
+      { passive: true }
+    );
+    render();
+    restartAutoScroll();
+    window.addEventListener("beforeunload", stopAutoScroll);
   }
-  // --- Initialize infinite carousel on DOMContentLoaded ---
-  if (track) {
-    initInfiniteCarousel();
-  }
+
+  createTestimonialCarousel();
 })();
