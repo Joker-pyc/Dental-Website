@@ -1,0 +1,7 @@
+User-agent: *
+Allow: /
+Sitemap: https://www.raindental.co.in/sitemap.xml
+
+# Block admin areas if they exist
+Disallow: /admin/
+Disallow: /private/ 
