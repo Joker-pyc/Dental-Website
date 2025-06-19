@@ -1,0 +1,6 @@
+{
+  "version": 2,
+  "builds": [],
+  "routes": [{ "src": "/(.*)", "dest": "/index.html" }],
+  "project": "Rain Dental Static Site"
+}

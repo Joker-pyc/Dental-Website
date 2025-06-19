@@ -1,0 +1,8 @@
+{
+  "root": ".",
+  "clean_urls": true,
+  "routes": {
+    "/**": "index.html"
+  },
+  "version": "1.0.0"
+}
