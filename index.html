@@ -17,32 +17,82 @@
       content="dentist mumbai, dental clinic andheri east, periodontal treatment, dental implants mumbai, cosmetic dentistry, Dr. Anjali Jha"
     />
     <meta name="robots" content="index, follow" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="canonical" href="https://www.raindental.co.in/" />
+
+    <!-- Sitelinks Search Box & Dentist Schema -->
     <script type="application/ld+json">
       {
         "@context": "https://schema.org",
-        "@type": "Dentist",
-        "name": "Rain Aesthetics & Implant Center",
-        "image": "https://www.raindental.co.in/assets/images/logo.png",
-        "address": {
-          "@type": "PostalAddress",
-          "streetAddress": "Trans Residency 3-B/004, Subhash Nagar",
-          "addressLocality": "Andheri East",
-          "addressRegion": "Mumbai",
-          "postalCode": "400093",
-          "addressCountry": "IN"
-        },
-        "telephone": "+91 90040 15693",
-        "email": "anjali_jha@ymail.com",
-        "openingHours": ["Mo-Sa 10:00-13:00", "Mo-Sa 17:00-21:00"],
-        "priceRange": "$$",
-        "employee": {
-          "@type": "Person",
-          "name": "Dr. Anjali Jha",
-          "jobTitle": "Consultant Periodontist & Oral Implantologist",
-          "telephone": "+91 90040 15693"
-        }
+        "@graph": [
+          {
+            "@type": "Dentist",
+            "@id": "https://www.raindental.co.in/#dentist",
+            "name": "Rain Aesthetics & Implant Center",
+            "image": "https://www.raindental.co.in/assets/images/logo.png",
+            "url": "https://www.raindental.co.in/",
+            "telephone": "+91 90040 15693",
+            "email": "anjali_jha@ymail.com",
+            "address": {
+              "@type": "PostalAddress",
+              "streetAddress": "Trans Residency 3-B/004, Subhash Nagar",
+              "addressLocality": "Andheri East",
+              "addressRegion": "Mumbai",
+              "postalCode": "400093",
+              "addressCountry": "IN"
+            },
+            "geo": {
+              "@type": "GeoCoordinates",
+              "latitude": 19.1253801,
+              "longitude": 72.8678471
+            },
+            "openingHoursSpecification": [
+              {
+                "@type": "OpeningHoursSpecification",
+                "dayOfWeek": [
+                  "Monday",
+                  "Tuesday",
+                  "Wednesday",
+                  "Thursday",
+                  "Friday",
+                  "Saturday"
+                ],
+                "opens": "10:00",
+                "closes": "13:00"
+              },
+              {
+                "@type": "OpeningHoursSpecification",
+                "dayOfWeek": [
+                  "Monday",
+                  "Tuesday",
+                  "Wednesday",
+                  "Thursday",
+                  "Friday",
+                  "Saturday"
+                ],
+                "opens": "17:00",
+                "closes": "21:00"
+              }
+            ],
+            "priceRange": "$$",
+            "employee": {
+              "@type": "Person",
+              "name": "Dr. Anjali Jha",
+              "jobTitle": "Consultant Periodontist & Oral Implantologist",
+              "telephone": "+91 90040 15693"
+            }
+          },
+          {
+            "@type": "WebSite",
+            "@id": "https://www.raindental.co.in/#website",
+            "url": "https://www.raindental.co.in/",
+            "name": "Rain Dental Clinic",
+            "potentialAction": {
+              "@type": "SearchAction",
+              "target": "https://www.raindental.co.in/search?q={search_term_string}",
+              "query-input": "required name=search_term_string"
+            }
+          }
+        ]
       }
     </script>
 
@@ -130,8 +180,8 @@
             <a href="#services" class="nav-link">Services</a>
             <a href="#doctor" class="nav-link">Doctor</a>
             <a href="#gallery" class="nav-link">Gallery</a>
-            <a href="about.html" class="nav-link">About</a>
-            <a href="contact.html" class="nav-link">Contact</a>
+            <a href="#doctor" class="nav-link">About</a>
+            <a href="#contact" class="nav-link">Contact</a>
             <a href="#appointment" class="book-now-btn">Book Appointment</a>
           </div>
         </div>
