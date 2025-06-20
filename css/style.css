@@ -1895,8 +1895,9 @@ nav {
     left: 0;
     width: 100%;
     z-index: 1000;
-    background: rgba(20, 20, 20, 0.92);
-    /* semi-opaque, no blur */
+    background: rgba(20, 20, 20, 0.55);
+    backdrop-filter: blur(18px) saturate(180%);
+    -webkit-backdrop-filter: blur(18px) saturate(180%);
     box-shadow: 0 4px 24px rgba(0, 0, 0, 0.13);
     padding: 0.5rem 0;
     transition: background 0.3s, box-shadow 0.3s;
