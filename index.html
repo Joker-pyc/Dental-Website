@@ -19,7 +19,37 @@
     <meta name="robots" content="index, follow" />
     <link rel="canonical" href="https://www.raindental.co.in/" />
 
-    <!-- Sitelinks Search Box & Dentist Schema -->
+    <!-- Organization Structured Data for Google Logo -->
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "Organization",
+        "name": "Rain Dental Clinic",
+        "url": "https://www.raindental.co.in/",
+        "logo": "https://www.raindental.co.in/assets/images/logo.png",
+        "address": {
+          "@type": "PostalAddress",
+          "streetAddress": "Trans Residency 3-B/004, Subhash Nagar",
+          "addressLocality": "Andheri East",
+          "addressRegion": "Mumbai",
+          "postalCode": "400093",
+          "addressCountry": "IN"
+        },
+        "contactPoint": {
+          "@type": "ContactPoint",
+          "telephone": "+91 90040 15693",
+          "contactType": "Customer Support",
+          "areaServed": "IN"
+        },
+        "sameAs": [
+          "https://www.instagram.com/rain_dental_clinic?igsh=dDR0eXF1bXo2OGF5",
+          "https://wa.me/918669048892",
+          "https://maps.google.com/?q=Rain+Dental+Mumbai"
+        ]
+      }
+    </script>
+
+    <!-- Existing Dentist Schema (updated with logo) -->
     <script type="application/ld+json">
       {
         "@context": "https://schema.org",
@@ -29,6 +59,7 @@
             "@id": "https://www.raindental.co.in/#dentist",
             "name": "Rain Aesthetics & Implant Center",
             "image": "https://www.raindental.co.in/assets/images/logo.png",
+            "logo": "https://www.raindental.co.in/assets/images/logo.png",
             "url": "https://www.raindental.co.in/",
             "telephone": "+91 90040 15693",
             "email": "anjali_jha@ymail.com",
@@ -104,13 +135,25 @@
       property="og:description"
       content="Experience premium dental care with Dr. Anjali Jha. We specialize in smile makeovers, dental implants, and periodontal surgery."
     />
-    <meta property="og:image" content="assets/images/social-preview.jpg" />
-    <meta property="og:url" content="https://your-website-domain.com" />
+    <meta
+      property="og:image"
+      content="https://www.raindental.co.in/assets/images/logo.png"
+    />
+    <meta property="og:url" content="https://www.raindental.co.in/" />
     <meta property="og:type" content="website" />
     <meta name="twitter:card" content="summary_large_image" />
 
-    <link rel="icon" type="image/png" href="assets/images/logo.png" />
-    <link rel="apple-touch-icon" href="assets/images/apple-touch-icon.png" />
+    <link
+      rel="icon"
+      type="image/png"
+      href="https://www.raindental.co.in/assets/images/logo.png"
+      sizes="112x112"
+    />
+    <link
+      rel="apple-touch-icon"
+      href="https://www.raindental.co.in/assets/images/logo.png"
+      sizes="180x180"
+    />
 
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />

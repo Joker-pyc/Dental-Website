@@ -2077,6 +2077,7 @@ nav.scrolled {
 .rd-navbar .book-now-btn:hover {
     background: linear-gradient(90deg, #ef233c 60%, #d90429 100%);
     transform: scale(1.05);
+    color: #fff;
 }
 
 /* Navbar shadow and hierarchy */
