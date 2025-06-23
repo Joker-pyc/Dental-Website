@@ -2798,3 +2798,27 @@ nav.scrolled {
 }
 
 /* Remove old per-card swipe animation classes */
+.call-now-btn {
+    display: inline-block;
+    margin-bottom: 0.5em;
+    padding: 0.75rem 1.5rem;
+    background-image: linear-gradient(to right, var(--primary-color) 0%, var(--secondary-color) 51%, var(--primary-color) 100%);
+    background-size: 200% auto;
+    color: white;
+    border-radius: 50px;
+    text-decoration: none;
+    font-weight: 600;
+    font-family: var(--font-primary);
+    font-size: 1.08rem;
+    border: none;
+    text-align: center;
+    transition: all 0.4s ease;
+    box-shadow: 0 2px 12px rgba(217, 4, 41, 0.08);
+}
+
+.call-now-btn:hover {
+    background-position: right center;
+    transform: translateY(-2px) scale(1.04);
+    color: #fff;
+    box-shadow: 0 4px 24px rgba(217, 4, 41, 0.18);
+}
